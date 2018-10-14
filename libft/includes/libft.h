@@ -6,7 +6,7 @@
 /*   By: lkaser <lkaser@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/09/18 11:03:56 by lkaser            #+#    #+#             */
-/*   Updated: 2018/07/23 09:06:10 by lkaser           ###   ########.fr       */
+/*   Updated: 2018/10/14 15:28:41 by lkaser           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,12 @@
 # define FT_UTOA_BASE(nbr, base) ft_utoa_base(nbr, base, sizeof base - 1)
 # define TRUE (1)
 # define FALSE (0)
+
+/*
+** Math.
+*/
+double				ft_min(double a, double b);
+double				ft_max(double a, double b);
 
 /*
 ** Memory.
@@ -206,8 +212,6 @@ void				ft_putstrarray(char **str);
 void				ft_putintarray(int *int_array, size_t size);
 void				ft_putmem(char *varname, void *var, size_t bytes);
 t_bool				ft_in_range(const int i, const int low, const int high);
-double				ft_min(double a, double b);
-double				ft_max(double a, double b);
 
 /*
 ** Get next line.
