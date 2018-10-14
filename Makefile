@@ -6,7 +6,7 @@
 #    By: logan  <logan@42.us.org>                   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/03/13 10:03:24 by logan             #+#    #+#              #
-#    Updated: 2018/07/19 14:43:57 by lkaser           ###   ########.fr        #
+#    Updated: 2018/07/20 12:49:57 by lkaser           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,10 +26,10 @@ INCLUDES = -I libft/includes -I libmlx
 
 CPPFLAGS = -Wall -Wextra -Werror -O3 \
 $(INCLUDES) \
-#-g -fsanitize=address -fsanitize=undefined
+-g -fsanitize=address -fsanitize=undefined
 
 LDFLAGS = -L libft -lft \
-#-fsanitize=address -fsanitize=undefined
+-fsanitize=address -fsanitize=undefined
 
 all: $(OBJ_DIR) $(NAME)
 

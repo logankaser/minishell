@@ -6,7 +6,7 @@
 /*   By: lkaser <lkaser@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/09/18 11:03:56 by lkaser            #+#    #+#             */
-/*   Updated: 2018/07/11 13:45:39 by lkaser           ###   ########.fr       */
+/*   Updated: 2018/07/23 09:06:10 by lkaser           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ int					ft_isdigit(int c);
 int					ft_isalnum(int c);
 int					ft_isascii(int c);
 int					ft_isprint(int c);
+t_bool				ft_isanyof(char c, const char *these);
 int					ft_toupper(int c);
 int					ft_tolower(int c);
 void				*ft_memalloc(size_t size);
@@ -111,7 +112,7 @@ void				ft_putnbr_fd(int n, int fd);
 typedef t_bool		(*t_compare)(const void *, const void *);
 
 /*
-** Linked lists.
+** List.
 */
 
 typedef struct		s_list
@@ -132,6 +133,30 @@ void				*ft_lstpush(t_list **lst, void *content, size_t size);
 void				*ft_lstpop(t_list **lst);
 t_list				*ft_lstfind(t_list *lst, t_compare pred, const void *data);
 void				ft_lstrm(t_list **lst, t_list *to_rm);
+
+/*
+** Hash.
+*/
+
+uint64_t			ft_fnv_64(uint8_t *data, size_t size);
+uint32_t			ft_fnv_32(uint8_t *data, size_t size);
+
+/*
+** Map.
+*/
+
+typedef struct		s_map
+{
+	t_list			**data;
+	unsigned		count;
+	unsigned		capacity;
+}					t_map;
+
+void				ft_map_init(t_map *m);
+void				ft_map_resize(t_map *m, unsigned size);
+void				ft_map_insert(t_map *m, const char *key, const void *d);
+void				ft_map_remove(t_map *m, const char *key);
+void				ft_map_del(t_map *m);
 
 /*
 ** Vector.
