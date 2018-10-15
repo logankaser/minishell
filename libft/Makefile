@@ -11,13 +11,13 @@
 # **************************************************************************** #
 
 NAME = libft.a
-LIST = ft_atof ft_atoi ft_bzero ft_in_range ft_isalnum ft_isalpha \
+LIST = ft_atof ft_atoi ft_bzero ft_isalnum ft_isalpha \
 ft_isascii ft_isdigit ft_isprint ft_isanyof ft_itoa ft_itoa_base ft_lstadd \
 ft_lstdel ft_lstdelone ft_lstfind ft_lstiter ft_lstlen ft_lstmap ft_lstnew \
 ft_lstpush ft_lstpop ft_lstrm ft_memalloc ft_memccpy ft_memchr ft_memcmp ft_memcpy \
 ft_memdel ft_memmove ft_memset ft_min_max ft_putchar ft_putchar_fd ft_putendl \
-ft_putendl_fd ft_puterror ft_putintarray ft_putmem ft_putnbr ft_putnbr_fd \
-ft_putstr ft_putstr_fd ft_putstrarray ft_qsort ft_strcat ft_strchr ft_strclr \
+ft_putendl_fd ft_error ft_putnbr ft_putnbr_fd \
+ft_putstr ft_putstr_fd ft_qsort ft_strcat ft_strchr ft_strclr \
 ft_strcmp ft_strcpy ft_strdel ft_strdup ft_strequ ft_string ft_striter \
 ft_striteri ft_strjoin ft_strlcat ft_strlen ft_strmap ft_strmapi ft_strncat \
 ft_strncmp ft_strncpy ft_strnequ ft_strnew ft_strnstr ft_strrchr ft_strsplit \
@@ -34,7 +34,7 @@ CC = clang
 
 CPPFLAGS = -Wall -Wextra -Werror \
 -I includes \
--O3 -flto=thin -march=native \
+-O3 -flto=thin -march=native
 
 all: $(OBJ_DIR) $(NAME)
 
@@ -48,7 +48,7 @@ $(OBJ_DIR):
 
 -include $(DEP)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+$(OBJ_DIR)/%.o: %.c
 	@$(CC) $(CPPFLAGS) -MMD -c $< -o $@
 
 clean:

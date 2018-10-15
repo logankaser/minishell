@@ -69,7 +69,6 @@ void	ft_map_resize(t_map *m, unsigned size)
 	free(m->data);
 	m->data = new;
 	m->capacity = size;
-	}
 }
 
 void	ft_map_insert(t_map *m, const char *key, const void *d)

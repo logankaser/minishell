@@ -35,6 +35,8 @@
 # define TRUE (1)
 # define FALSE (0)
 
+typedef char		t_bool;
+
 /*
 ** Math.
 */
@@ -45,7 +47,6 @@ double				ft_max(double a, double b);
 ** Memory.
 */
 
-typedef char		t_bool;
 void				*ft_memset(void *ptr, int val, size_t n);
 void				ft_bzero(void *ptr, size_t b);
 void				*ft_memcpy(void *dst, const void *src, size_t b);
@@ -107,7 +108,8 @@ char				*ft_utoa_base(uintmax_t nbr, char *base_str,
 							unsigned base);
 void				ft_putchar(char c);
 void				ft_putstr(char const *s);
-void				ft_puterror(char const *s);
+void				ft_puterror(char const *error);
+void				ft_exit(char const *error, int code);
 void				ft_putendl(char const *s);
 void				ft_putnbr(int n);
 void				ft_putchar_fd(char c, int fd);
@@ -203,15 +205,6 @@ typedef struct		s_pair
 	void			*fst;
 	void			*snd;
 }					t_pair;
-
-/*
-** Misc.
-*/
-
-void				ft_putstrarray(char **str);
-void				ft_putintarray(int *int_array, size_t size);
-void				ft_putmem(char *varname, void *var, size_t bytes);
-t_bool				ft_in_range(const int i, const int low, const int high);
 
 /*
 ** Get next line.
