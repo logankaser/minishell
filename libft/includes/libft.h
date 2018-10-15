@@ -156,11 +156,12 @@ uint32_t			ft_fnv_32(uint8_t *data, size_t size);
 typedef struct		s_map
 {
 	t_list			**data;
-	unsigned		count;
+	unsigned		load;
 	unsigned		capacity;
+	unsigned		key_size
 }					t_map;
 
-void				ft_map_init(t_map *m);
+void				ft_map_init(t_map *m, unsigned key_size);
 void				ft_map_resize(t_map *m, unsigned size);
 void				ft_map_insert(t_map *m, const char *key, const void *d);
 void				ft_map_remove(t_map *m, const char *key);
