@@ -1,29 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_putstrarray.c                                   :+:      :+:    :+:   */
+/*   ft_puterror.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lkaser <lkaser@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/07/06 20:24:28 by lkaser            #+#    #+#             */
-/*   Updated: 2018/07/06 20:24:30 by lkaser           ###   ########.fr       */
+/*   Created: 2018/07/06 20:23:59 by lkaser            #+#    #+#             */
+/*   Updated: 2018/07/06 20:24:00 by lkaser           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-void	ft_putstrarray(char **str)
+void	ft_puterror(char const *error)
 {
-	ft_putstr("[ ");
-	while (*str)
-	{
-		ft_putchar('\"');
-		ft_putstr(*str);
-		ft_putchar('\"');
-		++str;
-		if (*str)
-			ft_putstr(", ");
-	}
-	ft_putstr(" ]");
-	ft_putchar('\n');
+	write(2, error, *error ? ft_strlen(error) : 0);
+	write(2, "\n", 1);
+}
+
+void	ft_exit(char const *error, int code)
+{
+	write(2, error, *error ? ft_strlen(error) : 0);
+	write(2, "\n", 1);
+	exit(code);
 }

@@ -14,24 +14,6 @@
 
 /*
 
-typedef struct      s_list
-{
-    void            *content;
-    size_t          content_size;
-    struct s_list   *next;
-}                   t_list;
-t_list              *ft_lstnew(void const *content, size_t content_size);
-void                ft_lstdelone(t_list **lst, void (*del)(void *, size_t));
-void                ft_lstdel(t_list **lst, void (*del)(void *, size_t));
-void                ft_lstadd(t_list **lst, t_list *new);
-void                ft_lstiter(t_list *lst, void (*f)(t_list *elem));
-t_list              *ft_lstmap(t_list *lst, t_list *(*f)(t_list *elem));
-void                *ft_lstpush(t_list **lst, void *content, size_t size);
-void                *ft_lstpop(t_list **lst);
-t_list              *ft_lstfind(t_list *lst, t_compare pred, const void *data);
-void                ft_lstrm(t_list **lst, t_list *to_rm);
-
-
 uint64_t			ft_fnv_64(uint8_t *data, size_t size);
 uint32_t			ft_fnv_32(uint8_t *data, size_t size);
 
@@ -44,11 +26,12 @@ typedef struct	  s_map
 
 */
 
-void	ft_map_init(t_map *m)
+void	ft_map_init(t_map *m, unsigned key_size)
 {
-	m->data = ft_memalloc(sizeof(void*) * 16);
-	m->count = 0;
-	m->capacity = 0;
+	m->data = ft_memalloc(sizeof(t_lst*) * 16);
+	m->load = 0;
+	m->capacity = 16;
+	m->key_size = key_size;
 }
 
 void	ft_map_resize(t_map *m, unsigned size)
@@ -69,14 +52,27 @@ void	ft_map_resize(t_map *m, unsigned size)
 	free(m->data);
 	m->data = new;
 	m->capacity = size;
-	}
 }
 
-void	ft_map_insert(t_map *m, const char *key, const void *d)
+/*
+** Reuses the 42 list struct by storing the hash in the
+** size field, which allows the reuse of all the t_lst fucntions.
+*/
+
+void	ft_map_insert(t_map *m, const uint8_t *key, const void *ptr)
 {
+	uint32_t	hash;
+	t_lst		*last;
+	uint8_t		bucket_load;
+
+	if (m->key_width == 0)
+		hash = ft_fnv_32(key, ft_strlen(key));
+	else
+		hash = ft_fnv_32(key, m->key_width);
+	last = ft_lstpush(m->data + (hash % m->capacity), ptr, hash);
 }
 
-void	ft_map_remove(t_map *m, const char *key)
+void	ft_map_remove(t_map *m, const uint8_t *key)
 {
 }
 
