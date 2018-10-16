@@ -146,8 +146,8 @@ void				ft_lstrm(t_list **lst, t_list *to_rm);
 ** Hash.
 */
 
-uint64_t			ft_fnv_64(uint8_t *data, size_t size);
-uint32_t			ft_fnv_32(uint8_t *data, size_t size);
+uint64_t			ft_fnv_64(const uint8_t *data, size_t size);
+uint32_t			ft_fnv_32(const uint8_t *data, size_t size);
 
 /*
 ** Map.
@@ -158,14 +158,14 @@ typedef struct		s_map
 	t_list			**data;
 	unsigned		load;
 	unsigned		capacity;
-	unsigned		key_size
+	unsigned		key_size;
 }					t_map;
 
 void				ft_map_init(t_map *m, unsigned key_size);
 void				ft_map_resize(t_map *m, unsigned size);
-void				ft_map_insert(t_map *m, const char *key, const void *d);
-void				ft_map_remove(t_map *m, const char *key);
-void				ft_map_del(t_map *m);
+void				ft_map_insert(t_map *m, const uint8_t *key, void *ptr);
+void				ft_map_remove(t_map *m, const uint8_t *key);
+void				*ft_map_get(t_map *m, const uint8_t *key);
 
 /*
 ** Vector.
