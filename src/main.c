@@ -38,15 +38,17 @@ void	init_minishell(t_minishell *ms)
 	}
 }
 
-int	main(void)
+int	main(int argc, char** argv)
 {
 	char *line;
 	int ret;
 	t_minishell ms;
+	pid_t pid;
 
 	init_minishell(&ms);
 	line = NULL;
 	ft_printf("%s) ", ms.user);
+	(void)argc;
 	while (1)
 	{
 		ret = get_next_line(0, &line);
@@ -54,6 +56,18 @@ int	main(void)
 			ft_printf("PATH=%s\n", ms.path);
 		else if (!ft_strncmp("exit", line, 4))
 			exit(1);
+		else if (!ft_strncmp("fork", line, 4))
+		{
+			pid = fork();
+			if (pid == 0)
+			{
+				lseek(0, 0, SEEK_END);
+				execv("/bin/cat", argv);
+				printf("Failed to execute command\n");
+			}
+			else
+				waitpid(pid, 0, 0);
+		}
 		ft_printf("%s) ", ms.user);
 		ft_memdel((void**)&line);
 	}

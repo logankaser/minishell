@@ -12,25 +12,11 @@
 
 #include "libft.h"
 
-/*
-
-uint64_t			ft_fnv_64(uint8_t *data, size_t size);
-uint32_t			ft_fnv_32(uint8_t *data, size_t size);
-
-typedef struct	  s_map
-{
-	t_list		  **data;
-	unsigned		count;
-	unsigned		capacity;
-}				   t_map;
-
-*/
-
 void	ft_map_init(t_map *m, unsigned key_size)
 {
-	m->data = ft_memalloc(sizeof(t_list*) * 16);
+	m->data = ft_memalloc(sizeof(t_list*) * 17);
 	m->load = 0;
-	m->capacity = 16;
+	m->capacity = 17;
 	m->key_size = key_size;
 }
 
@@ -75,13 +61,14 @@ void	ft_map_insert(t_map *m, const uint8_t *key, void *ptr)
 		ft_lstpush(m->data + (hash % m->capacity), ptr, hash);
 	else
 	{
-		bucket_load = 0;
+		bucket_load = 1;
 		i = m->data[hash % m->capacity];
 		while (i->next && i->next->content_size != hash)
 		{
 			++bucket_load;
 			i = i->next;
 		}
+		ft_printf("bucket %i load: %i\n", hash % m->capacity, bucket_load);
 		i->next = ft_lstnew(NULL, 0);
 		i = i->next;
 		i->content_size = hash;
