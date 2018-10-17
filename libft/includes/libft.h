@@ -90,6 +90,7 @@ char				*ft_strnew(size_t size);
 void				ft_strdel(char **str);
 void				ft_strclr(char *str);
 void				ft_striter(char *str, void (*f)(char *));
+void				ft_striter_1(char *str, char (*fn)(char));
 void				ft_striteri(char *str, void (*f)(unsigned int, char *));
 char				*ft_strmap(char const *str, char (*f)(char));
 char				*ft_strmapi(char const *str, char (*f)(unsigned int, char));
@@ -156,7 +157,7 @@ uint32_t			ft_fnv_32(const uint8_t *data, size_t size);
 typedef struct		s_map
 {
 	t_list			**data;
-	unsigned		load;
+	unsigned		count;
 	unsigned		capacity;
 	unsigned		key_size;
 }					t_map;

@@ -13,26 +13,30 @@
 #ifndef MINISHELL_H
 # define MINISHELL_H
 # include "libft.h"
+
 /*
-** Memory layout is like this:
+** Memory layout of t_envar:
 **
-** "NAMEOFVAR0VALUE:VALUE:VALUE"
-**  ^        ^^
-** name*     |\---- value*
-**           |
-**         (NULL)
+** "NAMEOFVAR=VALUE:VALUE:VALUE"
+**  ^         ^
+**  |         |
+** data*    value*
 **.
 */
 
+typedef void (*t_builtin)(t_vector args);
+
 typedef struct	s_envvar
 {
-	char*		name;
+	char*		data;
 	char*		value;
 }				t_envvar;
 
+
 typedef struct	s_minishell
 {
-	t_map		env;
+	t_map		builtins;
 }				t_minishell;
+
 
 #endif
