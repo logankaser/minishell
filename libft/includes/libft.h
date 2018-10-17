@@ -163,9 +163,9 @@ typedef struct		s_map
 
 void				ft_map_init(t_map *m, unsigned key_size);
 void				ft_map_resize(t_map *m, unsigned size);
-void				ft_map_insert(t_map *m, const uint8_t *key, void *ptr);
-void				ft_map_remove(t_map *m, const uint8_t *key);
-void				*ft_map_get(t_map *m, const uint8_t *key);
+void				ft_map_insert(t_map *m, const char *key, void *ptr);
+void				ft_map_remove(t_map *m, const char *key);
+void				*ft_map_get(t_map *m, const char *key);
 
 /*
 ** Vector.

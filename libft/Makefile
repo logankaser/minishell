@@ -34,7 +34,7 @@ CC = clang
 
 CPPFLAGS = -Wall -Wextra -Werror \
 -I includes \
--O3 -flto=thin -march=native
+-O2 -flto=thin -march=native
 
 all: $(OBJ_DIR) $(NAME)
 

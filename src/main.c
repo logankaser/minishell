@@ -18,23 +18,19 @@ extern char	**environ;
 
 void	init_minishell(t_minishell *ms)
 {
-	int		i;
-	t_map	env;
-	char	*key;
+	int			i;
+	t_envvar	*var;
 
-	ft_map_init(&env, 0);
-	*ms = (t_minishell){0, 0};
+	ft_map_init(&ms->env, 0);
 	i = -1;
 	while(environ[++i])
 	{
-		if (!ft_strncmp("USER=", environ[i], 5))
-			ms->user = ft_strdup(environ[i] + 5);
-		else if (!ft_strncmp("PATH=", environ[i], 5))
-			ms->path = ft_strdup(environ[i] + 5);
-		key = ft_strsub(environ[i], 0, ft_strchr(environ[i], '=') - environ[i]);
-		ft_map_insert(&env, (uint8_t*)key, key);
-		ft_printf("%s\n", ft_map_get(&env, (uint8_t*)key));
-		//free(key);
+		var = malloc(sizeof(t_envvar));
+		var->name = ft_strdup(environ[i]);
+		var->value = ft_strchr(var->name, '=');
+		*(var->value) = '\0';
+		var->value += 1;
+		ft_map_insert(&ms->env, var->name, var);
 	}
 }
 
@@ -47,14 +43,12 @@ int	main(int argc, char** argv)
 
 	init_minishell(&ms);
 	line = NULL;
-	ft_printf("%s) ", ms.user);
+	ft_printf("%s) ", ((t_envvar*)ft_map_get(&ms.env, "USER"))->value);
 	(void)argc;
 	while (1)
 	{
 		ret = get_next_line(0, &line);
-		if (!ft_strncmp("path", line, 4))
-			ft_printf("PATH=%s\n", ms.path);
-		else if (!ft_strncmp("exit", line, 4))
+		if (!ft_strncmp("exit", line, 4))
 			exit(1);
 		else if (!ft_strncmp("fork", line, 4))
 		{
@@ -68,7 +62,7 @@ int	main(int argc, char** argv)
 			else
 				waitpid(pid, 0, 0);
 		}
-		ft_printf("%s) ", ms.user);
+		ft_printf("%s) ", ((t_envvar*)ft_map_get(&ms.env, "USER"))->value);
 		ft_memdel((void**)&line);
 	}
 	return (0);
