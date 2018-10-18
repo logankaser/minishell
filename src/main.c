@@ -152,6 +152,16 @@ static char* expand(const char *raw)
 	return ((char*)out.data);
 }
 
+static int split_argv(t_vector *argv, char *src)
+{
+	size_t		len;
+	unsigned	i;
+	unsigned	j;
+
+	len = ft_strlen(src);
+	return 1;
+}
+
 static void	parse_command(t_minishell *ms, char* line)
 {
 	t_builtin	fn_ptr;
@@ -159,16 +169,10 @@ static void	parse_command(t_minishell *ms, char* line)
 	t_vector	argv;
 
 	ft_vector_init(&argv);
-	while (*line)
+	if (!split_argv(&argv, line))
 	{
-		while (ANY3(*line, '\t', ' ', '\v'))
-			++line;
-		path = line;
-		while (*line && !ANY3(*line, '\t', ' ', '\v'))
-			++line;
-		if (*line && ANY3(*line, '\t', ' ', '\v'))
-			*line++ = '\0';
-		ft_vector_push(&argv, expand(path));
+		ft_vector_del(&argv);
+		return ;
 	}
 	str_lower(argv.data[0]);
 	ft_vector_push(&argv, NULL);
@@ -176,6 +180,8 @@ static void	parse_command(t_minishell *ms, char* line)
 		fn_ptr(argv.length - 1, (char**)argv.data);
 	else if ((path = ft_map_get(&g_path, argv.data[0])))
 		exec_command((char*)argv.data[0], (char**)argv.data);
+	else
+		ft_printf("%s: not found\n", argv.data[0]);
 	ft_vector_del(&argv);
 }
 
