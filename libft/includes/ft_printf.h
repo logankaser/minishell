@@ -99,7 +99,7 @@ typedef struct			s_printf
 	int					prec;
 }						t_printf;
 
-void					format_print(t_printf pf, t_string *s);
+void					format_print(t_printf pf, t_uvector *s);
 int						ft_printf(char *format, ...);
 
 #endif

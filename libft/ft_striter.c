@@ -18,13 +18,3 @@ void	ft_striter(char *str, void (*fn)(char *))
 		while (*str)
 			fn(str++);
 }
-
-void	ft_striter_1(char *str, char (*fn)(char))
-{
-	if (str && fn)
-		while (*str)
-		{
-			*str = fn(*str);
-			++str;
-		}
-}

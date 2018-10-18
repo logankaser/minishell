@@ -93,7 +93,7 @@ unsigned		read_num(char **f)
 	return (num);
 }
 
-static void		format_parse(char **f, va_list args, t_string *s)
+static void		format_parse(char **f, va_list args, t_uvector *s)
 {
 	t_printf	pf;
 
@@ -120,12 +120,12 @@ static void		format_parse(char **f, va_list args, t_string *s)
 	format_print(pf, s);
 }
 
-static t_string	format_iter(char *f, va_list args)
+static t_uvector	format_iter(char *f, va_list args)
 {
 	size_t		d;
-	t_string	s;
+	t_uvector	s;
 
-	ft_string_init(&s);
+	ft_uvector_init(&s, 1);
 	d = 0;
 	while (f[d])
 	{
@@ -152,15 +152,15 @@ static t_string	format_iter(char *f, va_list args)
 int				ft_printf(char *format, ...)
 {
 	va_list		args;
-	t_string	s;
+	t_uvector	s;
 
 	if (format)
 	{
 		va_start(args, format);
 		s = format_iter(format, args);
 		va_end(args);
-		write(1, s.content, s.length);
-		free(s.content);
+		write(1, s.data, s.length);
+		free(s.data);
 		return (s.length);
 	}
 	return (0);

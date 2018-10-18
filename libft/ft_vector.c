@@ -14,8 +14,8 @@
 
 void				ft_vector_init(t_vector *v)
 {
-	v->data = malloc(sizeof(void*));
-	v->capacity = 1;
+	v->data = malloc(sizeof(void*) * 8);
+	v->capacity = 8;
 	v->length = 0;
 }
 

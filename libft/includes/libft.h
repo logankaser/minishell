@@ -90,7 +90,6 @@ char				*ft_strnew(size_t size);
 void				ft_strdel(char **str);
 void				ft_strclr(char *str);
 void				ft_striter(char *str, void (*f)(char *));
-void				ft_striter_1(char *str, char (*fn)(char));
 void				ft_striteri(char *str, void (*f)(unsigned int, char *));
 char				*ft_strmap(char const *str, char (*f)(char));
 char				*ft_strmapi(char const *str, char (*f)(unsigned int, char));
@@ -185,18 +184,31 @@ void				ft_vector_push(t_vector *v, void *d);
 void				ft_vector_del(t_vector *v);
 
 /*
-** Dynamic String.
+** Unboxed Vector.
 */
 
-typedef struct		s_string {
-	char			*content;
-	size_t			length;
-	size_t			capacity;
-}					t_string;
+typedef struct		s_uvector
+{
+	uint8_t			*data;
+	unsigned		capacity;
+	unsigned		length;
+	unsigned		width;
+}					t_uvector;
 
-void				ft_string_init(t_string *s);
-size_t				ft_string_append(t_string *s, char *add);
-size_t				ft_string_appendn(t_string *s, char *add, size_t len);
+void				ft_uvector_init(t_uvector *v, unsigned size);
+void				ft_uvector_resize(t_uvector *v, unsigned size);
+void				ft_uvector_push(t_uvector *v, const void *d);
+void				*ft_uvector_pop(t_uvector *v, void *item);
+void				*ft_uvector_get(t_uvector *v, unsigned i);
+
+/*
+** Dynamic String, Uses unboxed vector
+** These functions exist to make using unboxed vectors as strings
+** easier.
+*/
+
+size_t				ft_string_append(t_uvector *v, const char *add);
+size_t				ft_string_appendn(t_uvector *v, const char *add, size_t len);
 
 /*
 ** Pair.

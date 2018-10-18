@@ -82,7 +82,7 @@ static char			*char_to_str(int c)
 	return (str);
 }
 
-void				format_print(t_printf pf, t_string *s)
+void				format_print(t_printf pf, t_uvector *s)
 {
 	uintmax_t	nbr;
 	char		*str;

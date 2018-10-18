@@ -26,12 +26,13 @@ void	ft_map_resize(t_map *m, unsigned size)
 	void		**new;
 	unsigned	i;
 
-	new = malloc(sizeof(void*) * size);
+	new = malloc(sizeof(t_list*) * size);
 	i = 0;
 	while (i < m->capacity)
 	{
 		if (m->data[i])
 		{
+			m->data[i]
 		}
 		++i;
 	}

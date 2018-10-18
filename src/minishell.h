@@ -24,7 +24,7 @@
 **.
 */
 
-typedef void (*t_builtin)(t_vector args);
+typedef int (*t_builtin)(int argc, char *argv[]);
 
 typedef struct	s_envvar
 {

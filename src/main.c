@@ -19,35 +19,49 @@
 extern char	**environ;
 
 t_map	g_env;
+t_map	g_path;
 
-void	b_echo(t_vector args)
+int	b_echo(int argc, char *argv[])
 {
-	(void)args;
+	for (int i = 1; i < argc; ++i)
+		ft_printf("%s", argv[i]);
+	ft_putchar('\n');
+	return (0);
 }
 
-void	b_cd(t_vector args)
+int	b_cd(int argc, char *argv[])
 {
-	(void)args;
+	(void)argc;
+	(void)argv;
+	return (0);
 }
 
-void	b_env(t_vector args)
+int	b_env(int argc, char *argv[])
 {
-	(void)args;
+	(void)argc;
+	(void)argv;
+	return (0);
 }
 
-void	b_setenv(t_vector args)
+int	b_setenv(int argc, char *argv[])
 {
-	(void)args;
+	(void)argc;
+	(void)argv;
+	return (0);
 }
 
-void	b_unsetenv(t_vector args)
+int	b_unsetenv(int argc, char *argv[])
 {
-	(void)args;
+	(void)argc;
+	(void)argv;
+	return (0);
 }
 
-void	b_exit(t_vector args)
+int	b_exit(int argc, char *argv[])
 {
-	(void)args;
+	(void)argc;
+	(void)argv;
+	return (0);
 }
 
 void	init_minishell(t_minishell *ms)
@@ -57,12 +71,13 @@ void	init_minishell(t_minishell *ms)
 
 	ft_map_init(&ms->builtins, 0);
 	ft_map_init(&g_env, 0);
+	ft_map_init(&g_path, 0);
 	i = 0;
 	while(environ[i])
 	{
 		var = malloc(sizeof(t_envvar));
 		var->data = ft_strdup(environ[i++]);
-		var->value = ft_strchr(var->data, '=');;
+		var->value = ft_strchr(var->data, '=');
 		*(var->value) = '\0';
 		ft_map_insert(&g_env, var->data, var);
 		*(var->value) = '=';
@@ -77,36 +92,108 @@ void	init_minishell(t_minishell *ms)
 	ft_printf("Map count: %u\n", g_env.count);
 }
 
-int	main(int argc, char** argv)
+static void	str_lower(char *str)
+{
+	while(*str)
+	{
+		*str = ft_tolower(*str);
+		++str;
+	}
+}
+
+static void exec_command(char *path, char *argv[])
+{
+	pid_t	pid;
+
+	pid = fork();
+	if (pid == 0)
+	{
+		lseek(STDIN_FILENO, 0, SEEK_END);
+		execv(path, argv);
+		printf("Failed to execute command\n");
+	}
+	else
+		waitpid(pid, 0, 0);
+}
+
+static void	prompt(void)
+{
+	t_envvar	*var_user;
+	char		*user;
+
+	var_user = ft_map_get(&g_env, "USER");
+	user = var_user ? var_user->value : ":";
+	ft_printf("%s) ", user);
+}
+
+static char* expand(const char *raw)
+{
+	unsigned i;
+	t_uvector	out;
+	t_envvar	*var;
+
+	ft_uvector_init(&out, 1);
+	i = 0;
+	while (raw[i])
+	{
+		if (raw[i] == '~')
+		{
+			ft_string_appendn(&out, raw, i);
+			var = ft_map_get(&g_env, "HOME");
+			ft_string_append(&out, var ? var->value : "");
+			raw += i + 1;
+			i = 0;
+		}
+		else
+			++i;
+	}
+	ft_string_append(&out, raw);
+	// FIXME handle black space case.
+	return ((char*)out.data);
+}
+
+static void	parse_command(t_minishell *ms, char* line)
+{
+	t_builtin	fn_ptr;
+	char		*path;
+	t_vector	argv;
+
+	ft_vector_init(&argv);
+	while (*line)
+	{
+		while (ANY3(*line, '\t', ' ', '\v'))
+			++line;
+		path = line;
+		while (*line && !ANY3(*line, '\t', ' ', '\v'))
+			++line;
+		if (*line && ANY3(*line, '\t', ' ', '\v'))
+			*line++ = '\0';
+		ft_vector_push(&argv, expand(path));
+	}
+	str_lower(argv.data[0]);
+	ft_vector_push(&argv, NULL);
+	if ((fn_ptr = ft_map_get(&ms->builtins, argv.data[0])))
+		fn_ptr(argv.length - 1, (char**)argv.data);
+	else if ((path = ft_map_get(&g_path, argv.data[0])))
+		exec_command((char*)argv.data[0], (char**)argv.data);
+	ft_vector_del(&argv);
+}
+
+int	main(void)
 {
 	char		*line;
 	int			ret;
-	pid_t		pid;
 	t_minishell ms;
 
 	init_minishell(&ms);
 	line = NULL;
-	ft_printf("%s) ", ((t_envvar*)ft_map_get(&g_env, "USER"))->value);
-	(void)argc;
 	while (1)
 	{
+		prompt();
 		ret = get_next_line(0, &line);
-		ft_striter_1(line, (char (*)(char))ft_tolower);
-		if (!ft_strncmp("exit", line, 4))
-			exit(1);
-		else if (!ft_strncmp("fork", line, 4))
-		{
-			pid = fork();
-			if (pid == 0)
-			{
-				lseek(STDIN_FILENO, 0, SEEK_END);
-				execv("/bin/cat", argv);
-				printf("Failed to execute command\n");
-			}
-			else
-				waitpid(pid, 0, 0);
-		}
-		ft_printf("%s) ", ((t_envvar*)ft_map_get(&g_env, "USER"))->value);
+		if (ret > 0 && ft_strlen(line) > 0)
+			parse_command(&ms, line);
+
 		ft_memdel((void**)&line);
 	}
 	return (0);
