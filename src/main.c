@@ -23,8 +23,11 @@ t_map	g_path;
 
 int	b_echo(int argc, char *argv[])
 {
-	for (int i = 1; i < argc; ++i)
-		ft_printf("%s", argv[i]);
+	int			i;
+                                                                                                                                     
+	i = 1;
+	while (i < argc)
+		ft_printf("%s", argv[i++]);
 	ft_putchar('\n');
 	return (0);
 }
@@ -89,7 +92,7 @@ void	init_minishell(t_minishell *ms)
 	ft_map_insert(&ms->builtins, "setenv", &b_setenv);
 	ft_map_insert(&ms->builtins, "unsetenv", &b_unsetenv);
 	ft_map_insert(&ms->builtins, "exit", &b_exit);
-	ft_printf("Map count: %u\n", g_env.count);
+	ft_map_insert(&g_path, "ls", ft_strdup("/bin/ls"));
 }
 
 static void	str_lower(char *str)
@@ -101,19 +104,23 @@ static void	str_lower(char *str)
 	}
 }
 
-static void exec_command(char *path, char *argv[])
+static int exec_command(char *path, char *argv[])
 {
 	pid_t	pid;
+	int 	status;
 
+	status = 1;
 	pid = fork();
 	if (pid == 0)
 	{
 		lseek(STDIN_FILENO, 0, SEEK_END);
-		execv(path, argv);
+		status = execv(path, argv);
 		printf("Failed to execute command\n");
+		exit(1);
 	}
 	else
 		waitpid(pid, 0, 0);
+	return status;
 }
 
 static void	prompt(void)
@@ -148,26 +155,55 @@ static char* expand(const char *raw)
 			++i;
 	}
 	ft_string_append(&out, raw);
-	// FIXME handle black space case.
 	return ((char*)out.data);
 }
 
-static int split_argv(t_vector *argv, char *src)
+/*
+** Will need to be replace in 21sh with a version that handles
+** quotes and parens
+** "     echo -n  word word 0"
+** "00000echo0-n00word0word00"
+**       ^>>> ^>  ^>>> ^>>>
+**.
+*/
+static int split_argv(t_vector *v, char *src)
 {
-	size_t		len;
-	unsigned	i;
-	unsigned	j;
+    size_t len;
+    unsigned i;
 
-	len = ft_strlen(src);
-	return 1;
+    len = ft_strlen(src);
+    i = 0;
+    while (i < len)
+    {
+        if (ANY3(src[i], ' ', '\t', '\v'))
+            src[i] = '\0';
+        ++i;
+    }
+    i = 0;
+    while (i < len)
+    {
+        if (src[i])
+        {
+            ft_vector_push(v, expand(src + i));
+            while (src[i])
+                ++i;
+        }
+        ++i;
+    }
+    return (v->length);
 }
 
+/*
+** Status will be used in 21sh.
+*/
 static void	parse_command(t_minishell *ms, char* line)
 {
 	t_builtin	fn_ptr;
 	char		*path;
 	t_vector	argv;
+	int			status;
 
+	status = 127;
 	ft_vector_init(&argv);
 	if (!split_argv(&argv, line))
 	{
@@ -177,9 +213,9 @@ static void	parse_command(t_minishell *ms, char* line)
 	str_lower(argv.data[0]);
 	ft_vector_push(&argv, NULL);
 	if ((fn_ptr = ft_map_get(&ms->builtins, argv.data[0])))
-		fn_ptr(argv.length - 1, (char**)argv.data);
+		status = fn_ptr(argv.length - 1, (char**)argv.data);
 	else if ((path = ft_map_get(&g_path, argv.data[0])))
-		exec_command((char*)argv.data[0], (char**)argv.data);
+		status = exec_command(path, (char**)argv.data);
 	else
 		ft_printf("%s: not found\n", argv.data[0]);
 	ft_vector_del(&argv);
