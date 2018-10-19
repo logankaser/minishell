@@ -13,6 +13,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <dirent.h>
 #include "libft.h"
 #include "minishell.h"
 
@@ -64,7 +66,34 @@ int	b_exit(int argc, char *argv[])
 {
 	(void)argc;
 	(void)argv;
+	exit(1);
 	return (0);
+}
+
+/*
+** TODO make less shite.
+*/
+void	update_path(void)
+{
+	t_envvar		*var_path;
+	char			**path_array;
+	unsigned		i;
+	DIR				*dir;
+	struct dirent	*file;
+
+	if (!(var_path = ft_map_get(&g_env, "PATH")))
+		return ;
+	path_array = ft_strsplit(var_path->value, ':');
+	i = 0;
+	while (path_array[i])
+	{
+		dir = opendir(path_array[i]);
+		while ((file = readdir(dir)))
+			ft_map_insert(&g_path, file->d_name, ft_strjoin(ft_strjoin(path_array[i], "/"), file->d_name));
+		closedir(dir);
+		free(path_array[i++]);
+	}
+	free(path_array);
 }
 
 void	init_minishell(t_minishell *ms)
@@ -92,7 +121,7 @@ void	init_minishell(t_minishell *ms)
 	ft_map_insert(&ms->builtins, "setenv", &b_setenv);
 	ft_map_insert(&ms->builtins, "unsetenv", &b_unsetenv);
 	ft_map_insert(&ms->builtins, "exit", &b_exit);
-	ft_map_insert(&g_path, "ls", ft_strdup("/bin/ls"));
+	update_path();
 }
 
 static void	str_lower(char *str)
@@ -217,7 +246,7 @@ static void	parse_command(t_minishell *ms, char* line)
 	else if ((path = ft_map_get(&g_path, argv.data[0])))
 		status = exec_command(path, (char**)argv.data);
 	else
-		ft_printf("%s: not found\n", argv.data[0]);
+		ft_printf("`%s` not found\n", argv.data[0]);
 	ft_vector_del(&argv);
 }
 
