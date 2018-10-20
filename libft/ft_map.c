@@ -20,13 +20,12 @@ void	ft_map_init(t_map *m, unsigned key_size)
 	m->key_size = key_size;
 }
 
-/*
 void	ft_map_resize(t_map *m, unsigned size)
 {
 	void		**new;
 	unsigned	i;
 
-	new = malloc(sizeof(t_list*) * size);
+	new = ft_memalloc(sizeof(t_list*) * size);
 	i = 0;
 	while (i < m->capacity)
 	{
@@ -40,7 +39,6 @@ void	ft_map_resize(t_map *m, unsigned size)
 	m->data = new;
 	m->capacity = size;
 }
-*/
 
 /*
 ** Reuses the 42 list struct by storing the hash in the
@@ -87,9 +85,9 @@ void	ft_map_remove(t_map *m, const char *key)
 	if (i->content_size == hash)
 	{
 		free(i->content);
-		tmp = i;
 		m->data[hash % m->capacity] = i->next;
-		free(tmp);
+		free(i);
+		--m->count;
 		return ;
 	}
 	while (i->next && i->next->content_size != hash)
@@ -100,6 +98,7 @@ void	ft_map_remove(t_map *m, const char *key)
 	tmp = i->next;
 	i->next = i->next->next;
 	free(tmp);
+	--m->count;
 }
 
 void	*ft_map_get(t_map *m, const char *key)
