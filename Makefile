@@ -24,7 +24,7 @@ SUB = libft
 
 INCLUDES = -I libft/includes -I libmlx
 
-CPPFLAGS = -Wall -Wextra -Werror -O3 \
+CPPFLAGS = -Wall -Wextra -Werror -O3 -march=native \
 $(INCLUDES) \
 -g -fsanitize=address -fsanitize=undefined
 

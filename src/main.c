@@ -15,6 +15,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <libgen.h>
+#include <limits.h>
 #include "libft.h"
 #include "minishell.h"
 
@@ -26,25 +28,66 @@ t_map	g_path;
 int	b_echo(int argc, char *argv[])
 {
 	int			i;
-                                                                                                                                     
+	t_bool		flag_n;
+
+	flag_n = 0;
 	i = 1;
+	if (i < argc && argv[i][0] == '-' && argv[i][1] == 'n')
+		flag_n = ++i;
 	while (i < argc)
 		ft_printf("%s", argv[i++]);
-	ft_putchar('\n');
+	if (!flag_n)
+		ft_putchar('\n');
 	return (0);
 }
 
 int	b_cd(int argc, char *argv[])
 {
-	(void)argc;
-	(void)argv;
+	struct stat dir;
+
+	if (argc != 2)
+	{
+		printf("usage: cd <path>\n");
+		return 1;
+	}
+	if (lstat(argv[1], &dir))
+	{
+		printf("cd: no such file or directory: %s\n", argv[1]);
+		return 1;
+	}
+	if (!S_ISDIR(dir.st_mode))
+	{
+		printf("cd: not a directory: %s\n", argv[1]);
+		return 1;
+	}
+	if (chdir(argv[1]))
+	{
+		printf("cd: permission denied: %s\n", argv[1]);
+		return 1;
+	}
 	return (0);
 }
 
 int	b_env(int argc, char *argv[])
 {
+	unsigned	i;
+	t_list		*link;
+	t_envvar	*var;
+
 	(void)argc;
 	(void)argv;
+	i = 0;
+	while (i < g_env.capacity)
+	{
+		if (!(link = g_env.data[i++]))
+			continue ;
+		while (link)
+		{
+			var = link->content;
+			ft_printf("%s\n", var->data);
+			link = link->next;
+		}
+	}
 	return (0);
 }
 
@@ -66,34 +109,55 @@ int	b_exit(int argc, char *argv[])
 {
 	(void)argc;
 	(void)argv;
-	exit(1);
+	exit(0);
 	return (0);
 }
 
-/*
-** TODO make less shite.
-*/
+void	scan_dir_for_executables(t_uvector *tmp_str, DIR *dir, char *dir_path)
+{
+	struct dirent	*file;
+	unsigned		len;
+
+	tmp_str->length = 0;
+	ft_string_append(tmp_str, dir_path);
+	len = tmp_str->length;
+	while ((file = readdir(dir)))
+	{
+		tmp_str->length = len;
+		ft_string_append(tmp_str, "/");
+		ft_string_append(tmp_str, file->d_name);
+		if (access((char*)tmp_str->data, X_OK))
+			continue ;
+		ft_map_insert(&g_path, file->d_name, ft_strdup((char*)tmp_str->data));
+	}
+}
+
 void	update_path(void)
 {
 	t_envvar		*var_path;
 	char			**path_array;
 	unsigned		i;
 	DIR				*dir;
-	struct dirent	*file;
+	t_uvector		tmp_str;
 
+	ft_uvector_init(&tmp_str, sizeof(char));
 	if (!(var_path = ft_map_get(&g_env, "PATH")))
 		return ;
 	path_array = ft_strsplit(var_path->value, ':');
 	i = 0;
 	while (path_array[i])
 	{
-		dir = opendir(path_array[i]);
-		while ((file = readdir(dir)))
-			ft_map_insert(&g_path, file->d_name, ft_strjoin(ft_strjoin(path_array[i], "/"), file->d_name));
+		if (!(dir = opendir(path_array[i])))
+		{
+			free(path_array[i++]);
+			continue ;
+		}
+		scan_dir_for_executables(&tmp_str, dir, path_array[i]);
 		closedir(dir);
 		free(path_array[i++]);
 	}
 	free(path_array);
+	free(tmp_str.data);
 }
 
 void	init_minishell(t_minishell *ms)
@@ -156,10 +220,14 @@ static void	prompt(void)
 {
 	t_envvar	*var_user;
 	char		*user;
+	char		pwd[PATH_MAX];
+	char		*base;
 
+	getcwd(pwd, PATH_MAX);
+	base = basename(pwd);
 	var_user = ft_map_get(&g_env, "USER");
 	user = var_user ? var_user->value : ":";
-	ft_printf("%s) ", user);
+	ft_printf("\033[33m%s\033[0m.%s) ", user, base);
 }
 
 static char* expand(const char *raw)
@@ -241,7 +309,9 @@ static void	parse_command(t_minishell *ms, char* line)
 	}
 	str_lower(argv.data[0]);
 	ft_vector_push(&argv, NULL);
-	if ((fn_ptr = ft_map_get(&ms->builtins, argv.data[0])))
+	if (!access((char*)argv.data[0], X_OK))
+		status = exec_command(argv.data[0], (char**)argv.data);
+	else if ((fn_ptr = ft_map_get(&ms->builtins, argv.data[0])))
 		status = fn_ptr(argv.length - 1, (char**)argv.data);
 	else if ((path = ft_map_get(&g_path, argv.data[0])))
 		status = exec_command(path, (char**)argv.data);

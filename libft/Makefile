@@ -33,9 +33,9 @@ DEP = $(OBJ:%.o=%.d)
 CC = clang
 
 CPPFLAGS = -Wall -Wextra -Werror \
--I includes \
+-I includes -O3 \
 -g -fsanitize=address -fsanitize=undefined
-#-O3 -flto=thin -march=native
+#-flto=thin -march=native
 
 all: $(OBJ_DIR) $(NAME)
 
