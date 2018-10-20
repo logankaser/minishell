@@ -20,6 +20,7 @@ void	ft_map_init(t_map *m, unsigned key_size)
 	m->key_size = key_size;
 }
 
+/*
 void	ft_map_resize(t_map *m, unsigned size)
 {
 	void		**new;
@@ -39,6 +40,7 @@ void	ft_map_resize(t_map *m, unsigned size)
 	m->data = new;
 	m->capacity = size;
 }
+*/
 
 /*
 ** Reuses the 42 list struct by storing the hash in the
