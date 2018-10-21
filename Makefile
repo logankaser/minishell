@@ -6,7 +6,7 @@
 #    By: logan  <logan@42.us.org>                   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/03/13 10:03:24 by logan             #+#    #+#              #
-#    Updated: 2018/07/20 12:49:57 by lkaser           ###   ########.fr        #
+#    Updated: 2018/10/20 18:59:13 by lkaser           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,7 +39,7 @@ $(NAME): $(OBJ)
 		make -sC $$s;\
 	done
 	@printf "\e[32;1mLinking.. \e[0m\n"
-	@$(CC) $(LDFLAGS) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^
 	@printf "\e[32;1mCreated:\e[0m %s\n" $(NAME)
 
 $(OBJ_DIR):
@@ -49,7 +49,7 @@ $(OBJ_DIR):
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@printf "\e[34;1mCompiling: \e[0m%s\n" $<
-	@$(CC) $(CPPFLAGS) -MMD -c $< -o $@
+	$(CC) $(CPPFLAGS) -MMD -c $< -o $@
 
 clean:
 	@for s in $(SUB);\

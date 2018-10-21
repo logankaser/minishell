@@ -35,7 +35,10 @@ int	b_echo(int argc, char *argv[])
 	if (i < argc && argv[i][0] == '-' && argv[i][1] == 'n')
 		flag_n = ++i;
 	while (i < argc)
-		ft_printf("%s", argv[i++]);
+		if (i + 1 < argc)
+			ft_printf("%s ", argv[i++]);
+		else
+			ft_printf("%s", argv[i++]);
 	if (!flag_n)
 		ft_putchar('\n');
 	return (0);
@@ -165,9 +168,9 @@ void	init_minishell(t_minishell *ms)
 	unsigned	i;
 	t_envvar	*var;
 
-	ft_map_init(&ms->builtins, 0);
-	ft_map_init(&g_env, 0);
-	ft_map_init(&g_path, 0);
+	ft_map_init(&ms->builtins, 0, 17);
+	ft_map_init(&g_env, 0, 97);
+	ft_map_init(&g_path, 0, 1021);
 	i = 0;
 	while(environ[i])
 	{
@@ -227,7 +230,7 @@ static void	prompt(void)
 	base = basename(pwd);
 	var_user = ft_map_get(&g_env, "USER");
 	user = var_user ? var_user->value : ":";
-	ft_printf("\033[33m%s\033[0m.%s) ", user, base);
+	ft_printf("\033[33m%s\033[0m.%s$ ", user, base);
 }
 
 static char* expand(const char *raw)
@@ -256,8 +259,7 @@ static char* expand(const char *raw)
 }
 
 /*
-** Will need to be replace in 21sh with a version that handles
-** quotes and parens
+** Will need to be replace in 21sh with a version that tokenizes
 ** "     echo -n  word word 0"
 ** "00000echo0-n00word0word00"
 **       ^>>> ^>  ^>>> ^>>>
@@ -265,29 +267,29 @@ static char* expand(const char *raw)
 */
 static int split_argv(t_vector *v, char *src)
 {
-    size_t len;
-    unsigned i;
+	long		len;
+	long		i;
+	t_bool		quote;
 
-    len = ft_strlen(src);
-    i = 0;
-    while (i < len)
-    {
-        if (ANY3(src[i], ' ', '\t', '\v'))
-            src[i] = '\0';
-        ++i;
-    }
-    i = 0;
-    while (i < len)
-    {
-        if (src[i])
-        {
-            ft_vector_push(v, expand(src + i));
-            while (src[i])
-                ++i;
-        }
-        ++i;
-    }
-    return (v->length);
+	len = ft_strlen(src);
+	i = -1;
+	quote = FALSE;
+	while (++i < len)
+	{
+		if (src[i] == '"')
+			quote = !quote;
+		if ((!quote && ANY3(src[i], ' ', '\t', '\v')) || src[i] == '"')
+			src[i] = '\0';
+	}
+	i = -1;
+	while (++i < len)
+		if (src[i])
+		{
+			ft_vector_push(v, expand(src + i));
+			while (src[i])
+				++i;
+		}
+	return (v->length);
 }
 
 /*

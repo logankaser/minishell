@@ -23,7 +23,6 @@ char		*ft_strtrim(char const *str)
 	char	*trimmed;
 
 	NULL_GUARD(str);
-	len = 0;
 	while (*str && ws(*str))
 		++str;
 	len = ft_strlen(str);
