@@ -24,8 +24,6 @@
 **.
 */
 
-typedef int (*t_builtin)(int argc, char *argv[]);
-
 typedef struct	s_envvar
 {
 	char*		data;
@@ -36,7 +34,10 @@ typedef struct	s_envvar
 typedef struct	s_minishell
 {
 	t_map		builtins;
+	t_map		path;
+	t_map		env;
 }				t_minishell;
 
+typedef int (*t_builtin)(int argc, char *argv[], t_minishell *ms);
 
 #endif

@@ -22,101 +22,8 @@
 
 extern char	**environ;
 
-t_map	g_env;
-t_map	g_path;
-
-int	b_echo(int argc, char *argv[])
-{
-	int			i;
-	t_bool		flag_n;
-
-	flag_n = 0;
-	i = 1;
-	if (i < argc && argv[i][0] == '-' && argv[i][1] == 'n')
-		flag_n = ++i;
-	while (i < argc)
-		if (i + 1 < argc)
-			ft_printf("%s ", argv[i++]);
-		else
-			ft_printf("%s", argv[i++]);
-	if (!flag_n)
-		ft_putchar('\n');
-	return (0);
-}
-
-int	b_cd(int argc, char *argv[])
-{
-	struct stat dir;
-
-	if (argc != 2)
-	{
-		printf("usage: cd <path>\n");
-		return 1;
-	}
-	if (lstat(argv[1], &dir))
-	{
-		printf("cd: no such file or directory: %s\n", argv[1]);
-		return 1;
-	}
-	if (!S_ISDIR(dir.st_mode))
-	{
-		printf("cd: not a directory: %s\n", argv[1]);
-		return 1;
-	}
-	if (chdir(argv[1]))
-	{
-		printf("cd: permission denied: %s\n", argv[1]);
-		return 1;
-	}
-	return (0);
-}
-
-int	b_env(int argc, char *argv[])
-{
-	unsigned	i;
-	t_list		*link;
-	t_envvar	*var;
-
-	(void)argc;
-	(void)argv;
-	i = 0;
-	while (i < g_env.capacity)
-	{
-		if (!(link = g_env.data[i++]))
-			continue ;
-		while (link)
-		{
-			var = link->content;
-			ft_printf("%s\n", var->data);
-			link = link->next;
-		}
-	}
-	return (0);
-}
-
-int	b_setenv(int argc, char *argv[])
-{
-	(void)argc;
-	(void)argv;
-	return (0);
-}
-
-int	b_unsetenv(int argc, char *argv[])
-{
-	(void)argc;
-	(void)argv;
-	return (0);
-}
-
-int	b_exit(int argc, char *argv[])
-{
-	(void)argc;
-	(void)argv;
-	exit(0);
-	return (0);
-}
-
-void	scan_dir_for_executables(t_uvector *tmp_str, DIR *dir, char *dir_path)
+void	scan_dir_for_executables(t_uvector *tmp_str, DIR *dir, 
+	char *dir_path, t_map *path)
 {
 	struct dirent	*file;
 	unsigned		len;
@@ -131,11 +38,11 @@ void	scan_dir_for_executables(t_uvector *tmp_str, DIR *dir, char *dir_path)
 		ft_string_append(tmp_str, file->d_name);
 		if (access((char*)tmp_str->data, X_OK))
 			continue ;
-		ft_map_insert(&g_path, file->d_name, ft_strdup((char*)tmp_str->data));
+		ft_map_set(path, file->d_name, ft_strdup((char*)tmp_str->data));
 	}
 }
 
-void	update_path(void)
+void	update_path(t_minishell *ms)
 {
 	t_envvar		*var_path;
 	char			**path_array;
@@ -144,7 +51,7 @@ void	update_path(void)
 	t_uvector		tmp_str;
 
 	ft_uvector_init(&tmp_str, sizeof(char));
-	if (!(var_path = ft_map_get(&g_env, "PATH")))
+	if (!(var_path = ft_map_get(&ms->env, "PATH")))
 		return ;
 	path_array = ft_strsplit(var_path->value, ':');
 	i = 0;
@@ -155,12 +62,169 @@ void	update_path(void)
 			free(path_array[i++]);
 			continue ;
 		}
-		scan_dir_for_executables(&tmp_str, dir, path_array[i]);
+		scan_dir_for_executables(&tmp_str, dir, path_array[i], &ms->path);
 		closedir(dir);
 		free(path_array[i++]);
 	}
 	free(path_array);
 	free(tmp_str.data);
+}
+
+
+int	b_echo(int argc, char *argv[], t_minishell *ms)
+{
+	int			i;
+	t_bool		flag_n;
+
+	(void)ms;
+	flag_n = 0;
+	i = 1;
+	if (i < argc && argv[i][0] == '-' && argv[i][1] == 'n')
+		flag_n = ++i;
+	while (i < argc)
+		if (i + 1 < argc)
+			ft_printf("%s ", argv[i++]);
+		else
+			ft_printf("%s", argv[i++]);
+	if (!flag_n)
+		ft_putchar('\n');
+	return (0);
+}
+
+int	b_cd(int argc, char *argv[], t_minishell *ms)
+{
+	struct stat	dir;
+	int			status;
+	char		*path;
+
+	(void)ms;
+	path = argv[1];
+	status = 0;
+	if ((status = argc != 2))
+		ft_printf("usage: cd <path>\n");
+	else if ((status = lstat(path, &dir)))
+		ft_printf("cd: no such file or directory: %s\n", path);
+	else if ((status = !S_ISDIR(dir.st_mode)))
+		ft_printf("cd: not a directory: %s\n", path);
+	else if ((status = chdir(path)))
+		ft_printf("cd: permission denied: %s\n", path);
+	return (status);
+}
+
+int	b_env(int argc, char *argv[], t_minishell *ms)
+{
+	unsigned	i;
+	t_list		*link;
+	t_envvar	*var;
+
+	(void)argc;
+	(void)argv;
+	i = 0;
+	while (i < ms->env.capacity)
+	{
+		if (!(link = ms->env.data[i++]))
+			continue ;
+		while (link)
+		{
+			var = link->content;
+			ft_printf("%s\n", var->data);
+			link = link->next;
+		}
+	}
+	return (0);
+}
+
+int	b_path(int argc, char *argv[], t_minishell *ms)
+{
+	unsigned	i;
+	t_list		*link;
+
+	(void)argc;
+	(void)argv;
+	i = 0;
+	while (i < ms->path.capacity)
+	{
+		if (!(link = ms->path.data[i++]))
+			continue ;
+		while (link)
+		{
+			ft_printf("%s\n", link->content);
+			link = link->next;
+		}
+	}
+	return (0);
+}
+
+int	b_setenv(int argc, char *argv[], t_minishell *ms)
+{
+	t_envvar	*var;
+
+	if (argc != 3)
+	{
+		ft_printf("usage: setenv <VAR> <VALUE>\n");
+		return 1;
+	}
+	var = ft_map_remove(&ms->env, argv[1]);
+	if (!var)
+		var = malloc(sizeof(t_envvar));
+	else
+		free(var->data);
+	var->data = ft_memalloc(ft_strlen(argv[1]) + ft_strlen(argv[2]) + 2);
+	ft_strcat(var->data, argv[1]);
+	ft_strcat(var->data, "=");
+	ft_strcat(var->data, argv[2]);
+	ft_map_set(&ms->env, argv[1], var);
+	if (argc == 3 && !ft_strcmp(argv[1], "PATH"))
+	{
+		ft_map_clear(&ms->path, free);
+		update_path(ms);
+	}
+	return (0);
+}
+
+int	b_unsetenv(int argc, char *argv[], t_minishell *ms)
+{
+	t_envvar	*var;
+
+	if (argc != 2)
+	{
+		ft_printf("usage: unsetenv <VAR>\n");
+		return 1;
+	}
+	var = ft_map_remove(&ms->env, argv[1]);
+	free(var->data);
+	free(var);
+	if (argc == 2 && !ft_strcmp(argv[1], "PATH"))
+		ft_map_clear(&ms->path, free);
+	return (0);
+}
+
+void	free_envvar(void *v)
+{
+	t_envvar	*env;
+
+	env = v;
+	free(env->data);
+	free(env);
+}
+
+void	noop(void *v)
+{
+	(void)v;
+}
+
+int	b_exit(int argc, char *argv[], t_minishell *ms)
+{
+	(void)argc;
+	(void)argv;
+	ft_map_clear(&ms->path, &free);
+	ft_map_clear(&ms->env, &free_envvar);
+	ft_map_clear(&ms->builtins, &noop);
+	free(ms->path.data);
+	free(ms->env.data);
+	free(ms->builtins.data);
+	exit(0);
+	return (0);
 }
 
 void	init_minishell(t_minishell *ms)
@@ -169,8 +233,8 @@ void	init_minishell(t_minishell *ms)
 	t_envvar	*var;
 
 	ft_map_init(&ms->builtins, 0, 17);
-	ft_map_init(&g_env, 0, 97);
-	ft_map_init(&g_path, 0, 1021);
+	ft_map_init(&ms->env, 0, 97);
+	ft_map_init(&ms->path, 0, 1021);
 	i = 0;
 	while(environ[i])
 	{
@@ -178,26 +242,18 @@ void	init_minishell(t_minishell *ms)
 		var->data = ft_strdup(environ[i++]);
 		var->value = ft_strchr(var->data, '=');
 		*(var->value) = '\0';
-		ft_map_insert(&g_env, var->data, var);
+		ft_map_set(&ms->env, var->data, var);
 		*(var->value) = '=';
 		var->value += 1;
 	}
-	ft_map_insert(&ms->builtins, "echo", &b_echo);
-	ft_map_insert(&ms->builtins, "cd", &b_cd);
-	ft_map_insert(&ms->builtins, "env", &b_env);
-	ft_map_insert(&ms->builtins, "setenv", &b_setenv);
-	ft_map_insert(&ms->builtins, "unsetenv", &b_unsetenv);
-	ft_map_insert(&ms->builtins, "exit", &b_exit);
-	update_path();
-}
-
-static void	str_lower(char *str)
-{
-	while(*str)
-	{
-		*str = ft_tolower(*str);
-		++str;
-	}
+	ft_map_set(&ms->builtins, "echo", &b_echo);
+	ft_map_set(&ms->builtins, "cd", &b_cd);
+	ft_map_set(&ms->builtins, "env", &b_env);
+	ft_map_set(&ms->builtins, "path", &b_path);
+	ft_map_set(&ms->builtins, "setenv", &b_setenv);
+	ft_map_set(&ms->builtins, "unsetenv", &b_unsetenv);
+	ft_map_set(&ms->builtins, "exit", &b_exit);
+	update_path(ms);
 }
 
 static int exec_command(char *path, char *argv[])
@@ -219,7 +275,7 @@ static int exec_command(char *path, char *argv[])
 	return status;
 }
 
-static void	prompt(void)
+static void	prompt(t_minishell *ms)
 {
 	t_envvar	*var_user;
 	char		*user;
@@ -228,12 +284,12 @@ static void	prompt(void)
 
 	getcwd(pwd, PATH_MAX);
 	base = basename(pwd);
-	var_user = ft_map_get(&g_env, "USER");
+	var_user = ft_map_get(&ms->env, "USER");
 	user = var_user ? var_user->value : ":";
 	ft_printf("\033[33m%s\033[0m.%s$ ", user, base);
 }
 
-static char* expand(const char *raw)
+static char* expand(const char *raw, t_minishell *ms)
 {
 	unsigned i;
 	t_uvector	out;
@@ -246,7 +302,7 @@ static char* expand(const char *raw)
 		if (raw[i] == '~')
 		{
 			ft_string_appendn(&out, raw, i);
-			var = ft_map_get(&g_env, "HOME");
+			var = ft_map_get(&ms->env, "HOME");
 			ft_string_append(&out, var ? var->value : "");
 			raw += i + 1;
 			i = 0;
@@ -265,7 +321,7 @@ static char* expand(const char *raw)
 **       ^>>> ^>  ^>>> ^>>>
 **.
 */
-static int split_argv(t_vector *v, char *src)
+static int split_argv(t_vector *v, char *src, t_minishell *ms)
 {
 	long		len;
 	long		i;
@@ -285,7 +341,7 @@ static int split_argv(t_vector *v, char *src)
 	while (++i < len)
 		if (src[i])
 		{
-			ft_vector_push(v, expand(src + i));
+			ft_vector_push(v, expand(src + i, ms));
 			while (src[i])
 				++i;
 		}
@@ -304,18 +360,18 @@ static void	parse_command(t_minishell *ms, char* line)
 
 	status = 127;
 	ft_vector_init(&argv);
-	if (!split_argv(&argv, line))
+	if (!split_argv(&argv, line, ms))
 	{
 		ft_vector_del(&argv);
 		return ;
 	}
-	str_lower(argv.data[0]);
+	ft_striter_u(argv.data[0], &ft_tolower);
 	ft_vector_push(&argv, NULL);
 	if (!access((char*)argv.data[0], X_OK))
 		status = exec_command(argv.data[0], (char**)argv.data);
 	else if ((fn_ptr = ft_map_get(&ms->builtins, argv.data[0])))
-		status = fn_ptr(argv.length - 1, (char**)argv.data);
-	else if ((path = ft_map_get(&g_path, argv.data[0])))
+		status = fn_ptr(argv.length - 1, (char**)argv.data, ms);
+	else if ((path = ft_map_get(&ms->path, argv.data[0])))
 		status = exec_command(path, (char**)argv.data);
 	else
 		ft_printf("`%s` not found\n", argv.data[0]);
@@ -332,11 +388,10 @@ int	main(void)
 	line = NULL;
 	while (1)
 	{
-		prompt();
+		prompt(&ms);
 		ret = get_next_line(0, &line);
 		if (ret > 0 && ft_strlen(line) > 0)
 			parse_command(&ms, line);
-
 		ft_memdel((void**)&line);
 	}
 	return (0);

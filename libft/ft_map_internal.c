@@ -15,6 +15,8 @@
 static void	map_place_link(void **new, unsigned bucket, t_list *link)
 {
 	t_list		*i;
+
+	link->next = NULL;
 	if (!new[bucket])
 	{
 		new[bucket] = link;
@@ -24,7 +26,6 @@ static void	map_place_link(void **new, unsigned bucket, t_list *link)
 	while (i->next)
 		i = i->next;
 	i->next = link;
-	link->next = NULL;
 }
 
 void		ft_map_resize_(t_map *m, unsigned size)
@@ -32,6 +33,7 @@ void		ft_map_resize_(t_map *m, unsigned size)
 	void		**new;
 	unsigned	i;
 	t_list		*link;
+	t_list		*tmp;
 
 	new = ft_memalloc(sizeof(t_list*) * size);
 	i = 0;
@@ -41,8 +43,9 @@ void		ft_map_resize_(t_map *m, unsigned size)
 			continue ;
 		while (link)
 		{
+			tmp = link->next;
 			map_place_link(new, link->content_size % size, link);
-			link = link->next;
+			link = tmp;
 		}
 	}
 	free(m->data);
@@ -56,7 +59,7 @@ void		ft_map_resize_(t_map *m, unsigned size)
 ** content_size field, which allows the reuse of all the t_lst fucntions.
 */
 
-void		ft_map_insert_(t_map *m, uint32_t hash, void *ptr)
+void		ft_map_insert(t_map *m, uint32_t hash, void *ptr)
 {
 	t_list		*i;
 	unsigned	bucket;
@@ -77,6 +80,8 @@ void		ft_map_insert_(t_map *m, uint32_t hash, void *ptr)
 			i->next = ft_lstnew(NULL, 0);
 			++m->count;
 		}
+		else
+			free(i->next->content);
 		i->next->content_size = hash;
 		i->next->content = ptr;
 	}

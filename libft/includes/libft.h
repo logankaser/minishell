@@ -91,6 +91,7 @@ void				ft_strdel(char **str);
 void				ft_strclr(char *str);
 void				ft_striter(char *str, void (*f)(char *));
 void				ft_striteri(char *str, void (*f)(unsigned int, char *));
+void				ft_striter_u(char *str, int (*fn)(int));
 char				*ft_strmap(char const *str, char (*f)(char));
 char				*ft_strmapi(char const *str, char (*f)(unsigned int, char));
 int					ft_strequ(char const *a, char const *b);
@@ -163,10 +164,11 @@ typedef struct		s_map
 
 void				ft_map_init(t_map *m, unsigned key_size, unsigned size);
 void				ft_map_resize_(t_map *m, unsigned size);
-void				ft_map_insert_(t_map *m, uint32_t hash, void *ptr);
-void				ft_map_insert(t_map *m, const char *key, void *ptr);
-void				ft_map_remove(t_map *m, const char *key);
+void				ft_map_insert(t_map *m, uint32_t hash, void *ptr);
+void				ft_map_set(t_map *m, const char *key, void *ptr);
 void				*ft_map_get(t_map *m, const char *key);
+void				*ft_map_remove(t_map *m, const char *key);
+void				ft_map_clear(t_map *m, void (*free_fn)(void *));
 
 /*
 ** Vector.

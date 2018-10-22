@@ -56,7 +56,7 @@ char			**ft_strsplit(const char *str, const char d)
 		while (*str == d)
 			++str;
 		w_size = word_size(str, d);
-		split_words[w] = (char *)malloc(w_size + 1);
+		split_words[w] = malloc(w_size + 1);
 		NULL_GUARD(split_words[w]);
 		split_words[w][w_size] = '\0';
 		chr = 0;

@@ -20,7 +20,7 @@ void	ft_bzero(void *m, size_t n)
 
 	b8 = m;
 	while (n && n % 8)
-		b8[n--] = 0;
+		b8[--n] = 0;
 	n /= 8;
 	b64 = m;
 	while (n)
