@@ -80,7 +80,7 @@ int					get_next_line(const int fd, char **line)
 		if (end < fi->fill)
 			return (1);
 	}
-	if (!(end = fill_line(fi, line)))
+	if ((end = fill_line(fi, line)) <= 0)
 		ft_lstrm(&fdlst, node);
 	return (end);
 }

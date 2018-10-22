@@ -38,6 +38,7 @@ void	scan_dir_for_executables(t_uvector *tmp_str, DIR *dir,
 		ft_string_append(tmp_str, file->d_name);
 		if (access((char*)tmp_str->data, X_OK))
 			continue ;
+		free(ft_map_remove(path, file->d_name));
 		ft_map_set(path, file->d_name, ft_strdup((char*)tmp_str->data));
 	}
 }
@@ -170,6 +171,7 @@ int	b_setenv(int argc, char *argv[], t_minishell *ms)
 	else
 		free(var->data);
 	var->data = ft_memalloc(ft_strlen(argv[1]) + ft_strlen(argv[2]) + 2);
+	var->value = var->data + ft_strlen(argv[1]) + 1;
 	ft_strcat(var->data, argv[1]);
 	ft_strcat(var->data, "=");
 	ft_strcat(var->data, argv[2]);
@@ -223,7 +225,7 @@ int	b_exit(int argc, char *argv[], t_minishell *ms)
 	free(ms->path.data);
 	free(ms->env.data);
 	free(ms->builtins.data);
-	exit(0);
+	ms->running = FALSE;
 	return (0);
 }
 
@@ -267,7 +269,7 @@ static int exec_command(char *path, char *argv[])
 	{
 		lseek(STDIN_FILENO, 0, SEEK_END);
 		status = execv(path, argv);
-		printf("Failed to execute command\n");
+		ft_printf("Failed to execute command\n");
 		exit(1);
 	}
 	else
@@ -384,15 +386,19 @@ int	main(void)
 	int			ret;
 	t_minishell ms;
 
+	ms.last_pwd = NULL;
 	init_minishell(&ms);
 	line = NULL;
-	while (1)
+	ms.running = TRUE;
+	while (ms.running)
 	{
 		prompt(&ms);
-		ret = get_next_line(0, &line);
+		ret = get_next_line(STDIN_FILENO, &line);
 		if (ret > 0 && ft_strlen(line) > 0)
 			parse_command(&ms, line);
 		ft_memdel((void**)&line);
 	}
+	close(STDIN_FILENO);
+	get_next_line(STDIN_FILENO, &line);
 	return (0);
 }

@@ -51,7 +51,7 @@ char			**ft_strsplit(const char *str, const char d)
 	size = num_words(str, d) + 1;
 	NULL_GUARD(split_words = (char **)malloc(sizeof(char*) * size));
 	w = 0;
-	while (w < size)
+	while (w < size - 1)
 	{
 		while (*str == d)
 			++str;

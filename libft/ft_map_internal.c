@@ -12,17 +12,17 @@
 
 #include "libft.h"
 
-static void	map_place_link(void **new, unsigned bucket, t_list *link)
+static void	map_place_link(void **new, unsigned bucket_index, t_list *link)
 {
 	t_list		*i;
 
 	link->next = NULL;
-	if (!new[bucket])
+	if (!new[bucket_index])
 	{
-		new[bucket] = link;
+		new[bucket_index] = link;
 		return ;
 	}
-	i = new[bucket];
+	i = new[bucket_index];
 	while (i->next)
 		i = i->next;
 	i->next = link;
@@ -32,20 +32,20 @@ void		ft_map_resize_(t_map *m, unsigned size)
 {
 	void		**new;
 	unsigned	i;
-	t_list		*link;
+	t_list		*bucket;
 	t_list		*tmp;
 
 	new = ft_memalloc(sizeof(t_list*) * size);
 	i = 0;
 	while (i < m->capacity)
 	{
-		if (!(link = m->data[i++]))
+		if (!(bucket = m->data[i++]))
 			continue ;
-		while (link)
+		while (bucket)
 		{
-			tmp = link->next;
-			map_place_link(new, link->content_size % size, link);
-			link = tmp;
+			tmp = bucket->next;
+			map_place_link(new, bucket->content_size % size, bucket);
+			bucket = tmp;
 		}
 	}
 	free(m->data);
@@ -61,28 +61,26 @@ void		ft_map_resize_(t_map *m, unsigned size)
 
 void		ft_map_insert(t_map *m, uint32_t hash, void *ptr)
 {
-	t_list		*i;
-	unsigned	bucket;
+	t_list		*bucket;
+	unsigned	bucket_index;
 
-	bucket = hash % m->capacity;
-	if (!m->data[bucket])
+	bucket_index = hash % m->capacity;
+	if (!m->data[bucket_index])
 	{
-		ft_lstpush((t_list **)m->data + bucket, ptr, hash);
+		ft_lstpush((t_list **)m->data + bucket_index, ptr, hash);
 		++m->count;
 	}
 	else
 	{
-		i = m->data[bucket];
-		while (i->next && i->next->content_size != hash)
-			i = i->next;
-		if (!i->next)
+		bucket = m->data[bucket_index];
+		while (bucket->next && bucket->next->content_size != hash)
+			bucket = bucket->next;
+		if (!bucket->next)
 		{
-			i->next = ft_lstnew(NULL, 0);
+			bucket->next = ft_lstnew(NULL, 0);
 			++m->count;
 		}
-		else
-			free(i->next->content);
-		i->next->content_size = hash;
-		i->next->content = ptr;
+		bucket->next->content_size = hash;
+		bucket->next->content = ptr;
 	}
 }

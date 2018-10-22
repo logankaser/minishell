@@ -40,42 +40,47 @@ void	ft_map_set(t_map *m, const char *key, void *ptr)
 void	*ft_map_remove(t_map *m, const char *key)
 {
 	uint32_t	hash;
-	t_list		**i;
+	t_list		*bucket;
 	void		*value;
-	t_list		*next;
+	t_list		*last;
 
 	hash = m->key_size ? ft_fnv_32((uint8_t*)key, m->key_size)
 		: ft_fnv_32((uint8_t*)key, ft_strlen(key));
-	i = (t_list**)m->data + (hash % m->capacity);
-	while (*i)
+	bucket = m->data[hash % m->capacity];
+	if (bucket && bucket->content_size == hash)
 	{
-		if ((*i)->content_size == hash)
-		{
-			value = (*i)->content;
-			next = (*i)->next;
-			free(*i);
-			*i = next;
-			--m->count;
-			return value;
-		}
-		*i = (*i)->next;
+		m->data[hash % m->capacity] = bucket->next;
+		value = bucket->content;
+		free(bucket);
+		return value;
 	}
-	return (NULL);
+	last = NULL;
+	while (bucket && bucket->content_size != hash)
+	{
+		last = bucket;
+		bucket = bucket->next;
+	}
+	if (!bucket)
+		return (NULL);
+	last->next = bucket->next;
+	value = bucket->content;
+	free(bucket);
+	return value;
 }
 
 void	*ft_map_get(t_map *m, const char *key)
 {
 	uint32_t	hash;
-	t_list		*i;
+	t_list		*bucket;
 
 	hash = m->key_size ? ft_fnv_32((uint8_t*)key, m->key_size)
 		: ft_fnv_32((uint8_t*)key, ft_strlen(key));
-	i = m->data[hash % m->capacity];
-	while (i)
+	bucket = m->data[hash % m->capacity];
+	while (bucket)
 	{
-		if (i->content_size == hash)
-			return (i->content);
-		i = i->next;
+		if (bucket->content_size == hash)
+			return (bucket->content);
+		bucket = bucket->next;
 	}
 	return (NULL);
 }
@@ -83,7 +88,7 @@ void	*ft_map_get(t_map *m, const char *key)
 void	ft_map_clear(t_map *m, void (*free_fn)(void *))
 {
 	unsigned	i;
-	t_list		*link;
+	t_list		*bucket;
 	t_list		*tmp;
 	unsigned	count;
 
@@ -91,16 +96,16 @@ void	ft_map_clear(t_map *m, void (*free_fn)(void *))
 	i = 0;
 	while (i < m->capacity)
 	{
-		if (!(link = m->data[i]))
+		if (!(bucket = m->data[i]))
 		{
 			++i;
 			continue ;
 		}
-		while (link)
+		while (bucket)
 		{
-			free_fn(link->content);
-			tmp = link;
-			link = link->next;
+			free_fn(bucket->content);
+			tmp = bucket;
+			bucket = bucket->next;
 			free(tmp);
 		}
 		m->data[i] = NULL;
