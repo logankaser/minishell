@@ -323,6 +323,11 @@ static int	exec_command(char *path, char *argv[], t_minishell *ms)
 	return (status);
 }
 
+/*
+** Prompt displays user name then the base directory of PWD,
+** Like so: `user.your_dir)`.
+*/
+
 static void	prompt(t_minishell *ms)
 {
 	t_envvar	*var_user;
@@ -334,7 +339,7 @@ static void	prompt(t_minishell *ms)
 	base = basename(pwd);
 	var_user = ft_map_get(&ms->env, "USER");
 	user = var_user ? var_user->value : ":";
-	ft_printf("\033[33m%s\033[0m.%s$ ", user, base);
+	ft_printf("\033[33m%s\033[0m.%s) ", user, base);
 }
 
 static unsigned expand_var(const char *raw, t_uvector *out, t_minishell *ms)
@@ -391,33 +396,40 @@ static char	*expand(const char *raw, t_minishell *ms)
 
 /*
 ** Will need to be replace in 21sh with a version that tokenizes
-** "     echo -n  word word 0"
-** "00000echo0-n00word0word00"
+** input, currently it is a hacky mess
+** This is how it works:
+** `     echo -n  word word 0`
+** `00000echo0-n00word0word00`
 **       ^>>> ^>  ^>>> ^>>>
-**.
+**
+** `echo   "extract to"   "~/ okay?"`
+** `0000000"extract to0000"~/ okay?0`
+** Leading `"` is kept by the first pass so that next pass knows
+** not to expand it.
 */
 
 static int	split_argv(t_vector *v, char *src, t_minishell *ms)
 {
 	long		len;
 	long		i;
-	t_bool		quote;
+	t_bool		esc;
 
 	len = ft_strlen(src);
+	esc = FALSE;
 	i = -1;
-	quote = FALSE;
 	while (++i < len)
 	{
 		if (src[i] == '"')
-			quote = !quote;
-		if ((!quote && ANY3(src[i], ' ', '\t', '\v')) || src[i] == '"')
+			esc = !esc;
+		if (!esc && ANY4(src[i], ' ', '\t', '\v', '"'))
 			src[i] = '\0';
 	}
 	i = -1;
-	while (++i < len)
+	while (++i < len && !esc)
 		if (src[i])
 		{
-			ft_vector_push(v, expand(src + i, ms));
+			ft_vector_push(v, src[i] == '"' ?
+				ft_strdup(src + i + 1) : expand(src + i, ms));
 			while (src[i])
 				++i;
 		}
