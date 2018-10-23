@@ -6,7 +6,7 @@
 /*   By: lkaser <lkaser@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/07/19 14:44:02 by lkaser            #+#    #+#             */
-/*   Updated: 2018/07/20 12:46:35 by lkaser           ###   ########.fr       */
+/*   Updated: 2018/10/22 19:42:22 by lkaser           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 
 extern char	**environ;
 
-void	scan_dir_for_executables(t_uvector *tmp_str, DIR *dir, 
+void	scan_dir_for_executables(t_uvector *tmp_str, DIR *dir,
 	char *dir_path, t_map *path)
 {
 	struct dirent	*file;
@@ -75,7 +75,6 @@ void	update_path(t_minishell *ms)
 	free(tmp_str.data);
 }
 
-
 int	b_echo(int argc, char *argv[], t_minishell *ms)
 {
 	int			i;
@@ -116,12 +115,12 @@ int	b_cd(int argc, char *argv[], t_minishell *ms)
 	return (status);
 }
 
-t_bool	compare(const void* a, const void* b)
+t_bool	compare(const void *a, const void *b)
 {
 	return (ft_strcmp(a, b) > 0);
 }
 
-char**	map_to_env_array(t_map *env, t_bool sort)
+char	**map_to_env_array(t_map *env, t_bool sort)
 {
 	unsigned	i;
 	t_list		*link;
@@ -150,14 +149,14 @@ char**	map_to_env_array(t_map *env, t_bool sort)
 int	b_env(int argc, char *argv[], t_minishell *ms)
 {
 	unsigned	i;
-	char**		env_array;
+	char		**env_array;
 	t_bool		sort;
 
 	sort = argc == 2 && !ft_strcmp(argv[1], "-s");
 	if (argc > 2 || (!sort && argc == 2))
 	{
 		ft_printf("usage: env [-s]\n");
-		return 1;
+		return (1);
 	}
 	env_array = map_to_env_array(&ms->env, sort);
 	i = 0;
@@ -177,7 +176,7 @@ int	b_path(int argc, char *argv[], t_minishell *ms)
 	if (argc > 2 || (!total && argc == 2))
 	{
 		ft_printf("usage: path [-t]\n");
-		return 1;
+		return (1);
 	}
 	i = 0;
 	while (i < ms->path.capacity)
@@ -202,7 +201,7 @@ int	b_setenv(int argc, char *argv[], t_minishell *ms)
 	if (argc != 3)
 	{
 		ft_printf("usage: setenv <VAR> <VALUE>\n");
-		return 1;
+		return (1);
 	}
 	var = ft_map_remove(&ms->env, argv[1]);
 	if (!var)
@@ -230,7 +229,7 @@ int	b_unsetenv(int argc, char *argv[], t_minishell *ms)
 	if (argc != 2)
 	{
 		ft_printf("usage: unsetenv <VAR>\n");
-		return 1;
+		return (1);
 	}
 	var = ft_map_remove(&ms->env, argv[1]);
 	free(var->data);
@@ -259,7 +258,7 @@ int	b_exit(int argc, char *argv[], t_minishell *ms)
 	if (argc != 1)
 	{
 		ft_printf("usage: exit\n");
-		return 1;
+		return (1);
 	}
 	(void)argv;
 	ft_map_clear(&ms->path, &free);
@@ -281,7 +280,7 @@ void	init_minishell(t_minishell *ms)
 	ft_map_init(&ms->env, 0, 97);
 	ft_map_init(&ms->path, 0, 1021);
 	i = 0;
-	while(environ[i])
+	while (environ[i])
 	{
 		var = malloc(sizeof(t_envvar));
 		var->data = ft_strdup(environ[i++]);
@@ -301,11 +300,11 @@ void	init_minishell(t_minishell *ms)
 	update_path(ms);
 }
 
-static int exec_command(char *path, char *argv[], t_minishell *ms)
+static int	exec_command(char *path, char *argv[], t_minishell *ms)
 {
 	pid_t	pid;
-	int 	status;
-	char**	env_array;
+	int		status;
+	char	**env_array;
 
 	status = 1;
 	pid = fork();
@@ -321,7 +320,7 @@ static int exec_command(char *path, char *argv[], t_minishell *ms)
 	else
 		waitpid(pid, 0, 0);
 	free(env_array);
-	return status;
+	return (status);
 }
 
 static void	prompt(t_minishell *ms)
@@ -338,16 +337,38 @@ static void	prompt(t_minishell *ms)
 	ft_printf("\033[33m%s\033[0m.%s$ ", user, base);
 }
 
-static char* expand(const char *raw, t_minishell *ms)
+static unsigned expand_var(const char *raw, t_uvector *out, t_minishell *ms)
 {
-	unsigned i;
+	unsigned	i;
+	t_uvector	var;
+
+
+	if (!raw[1] || ft_isdigit(raw[1]) || !(ft_isalpha(raw[1]) || raw[1] == '_'))
+	{
+		ft_string_append(out, "$");
+		return (1);
+	}
+	ft_uvector_init(&var, 1);
+	++raw;
+	i = 0;
+	while (ft_isdigit(raw[i]) || ft_isalpha(raw[i]) || raw[i] == '_')
+		ft_uvector_push(&var, raw + i++);
+	ft_uvector_push(&var, "\0");
+	printf("key: %s\n", var.data);
+	free(var.data);
+	(void)ms;
+	return 1;
+}
+
+static char	*expand(const char *raw, t_minishell *ms)
+{
+	unsigned	i;
 	t_uvector	out;
 	t_envvar	*var;
 
 	ft_uvector_init(&out, 1);
 	i = 0;
 	while (raw[i])
-	{
 		if (raw[i] == '~')
 		{
 			ft_string_appendn(&out, raw, i);
@@ -356,9 +377,14 @@ static char* expand(const char *raw, t_minishell *ms)
 			raw += i + 1;
 			i = 0;
 		}
+		else if (raw[i] == '$')
+		{
+			ft_string_appendn(&out, raw, i);
+			raw += i + expand_var(raw + i, &out, ms);
+			i = 0;
+		}
 		else
 			++i;
-	}
 	ft_string_append(&out, raw);
 	return ((char*)out.data);
 }
@@ -370,7 +396,8 @@ static char* expand(const char *raw, t_minishell *ms)
 **       ^>>> ^>  ^>>> ^>>>
 **.
 */
-static int split_argv(t_vector *v, char *src, t_minishell *ms)
+
+static int	split_argv(t_vector *v, char *src, t_minishell *ms)
 {
 	long		len;
 	long		i;
@@ -400,7 +427,8 @@ static int split_argv(t_vector *v, char *src, t_minishell *ms)
 /*
 ** Status will be used in 21sh.
 */
-static void	parse_command(t_minishell *ms, char* line)
+
+static void	parse_command(t_minishell *ms, char *line)
 {
 	t_builtin	fn_ptr;
 	char		*path;
