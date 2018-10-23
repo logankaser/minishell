@@ -26,6 +26,7 @@ void	scan_dir_for_executables(t_uvector *tmp_str, DIR *dir,
 	char *dir_path, t_map *path)
 {
 	struct dirent	*file;
+	struct stat		file_info;
 	unsigned		len;
 
 	tmp_str->length = 0;
@@ -36,7 +37,10 @@ void	scan_dir_for_executables(t_uvector *tmp_str, DIR *dir,
 		tmp_str->length = len;
 		ft_string_append(tmp_str, "/");
 		ft_string_append(tmp_str, file->d_name);
-		if (access((char*)tmp_str->data, X_OK))
+		if (file->d_name[0] == '.' || access((char*)tmp_str->data, X_OK))
+			continue ;
+		stat((char*)tmp_str->data, &file_info);
+		if (!S_ISREG(file_info.st_mode))
 			continue ;
 		free(ft_map_remove(path, file->d_name));
 		ft_map_set(path, file->d_name, ft_strdup((char*)tmp_str->data));
@@ -112,26 +116,54 @@ int	b_cd(int argc, char *argv[], t_minishell *ms)
 	return (status);
 }
 
-int	b_env(int argc, char *argv[], t_minishell *ms)
+t_bool	compare(const void* a, const void* b)
+{
+	return (ft_strcmp(a, b) > 0);
+}
+
+char**	map_to_env_array(t_map *env, t_bool sort)
 {
 	unsigned	i;
 	t_list		*link;
 	t_envvar	*var;
+	t_vector	env_array;
 
-	(void)argc;
-	(void)argv;
+	ft_vector_init(&env_array);
 	i = 0;
-	while (i < ms->env.capacity)
+	while (i < env->capacity)
 	{
-		if (!(link = ms->env.data[i++]))
+		if (!(link = env->data[i++]))
 			continue ;
 		while (link)
 		{
 			var = link->content;
-			ft_printf("%s\n", var->data);
+			ft_vector_push(&env_array, var->data);
 			link = link->next;
 		}
 	}
+	if (sort)
+		ft_qsort(env_array.data, env_array.length, compare);
+	ft_vector_push(&env_array, NULL);
+	return (char**)env_array.data;
+}
+
+int	b_env(int argc, char *argv[], t_minishell *ms)
+{
+	unsigned	i;
+	char**		env_array;
+	t_bool		sort;
+
+	sort = argc == 2 && !ft_strcmp(argv[1], "-s");
+	if (argc > 2 || (!sort && argc == 2))
+	{
+		ft_printf("usage: env [-s]\n");
+		return 1;
+	}
+	env_array = map_to_env_array(&ms->env, sort);
+	i = 0;
+	while (env_array[i])
+		ft_printf("%s\n", env_array[i++]);
+	free(env_array);
 	return (0);
 }
 
@@ -139,9 +171,14 @@ int	b_path(int argc, char *argv[], t_minishell *ms)
 {
 	unsigned	i;
 	t_list		*link;
+	t_bool		total;
 
-	(void)argc;
-	(void)argv;
+	total = argc == 2 && !ft_strcmp(argv[1], "-t");
+	if (argc > 2 || (!total && argc == 2))
+	{
+		ft_printf("usage: path [-t]\n");
+		return 1;
+	}
 	i = 0;
 	while (i < ms->path.capacity)
 	{
@@ -153,6 +190,8 @@ int	b_path(int argc, char *argv[], t_minishell *ms)
 			link = link->next;
 		}
 	}
+	if (total)
+		ft_printf("\n\033[0;1mtotal %u\033[0m\n", ms->path.count);
 	return (0);
 }
 
@@ -201,7 +240,7 @@ int	b_unsetenv(int argc, char *argv[], t_minishell *ms)
 	return (0);
 }
 
-void	free_envvar(void *v)
+static void	free_envvar(void *v)
 {
 	t_envvar	*env;
 
@@ -210,14 +249,18 @@ void	free_envvar(void *v)
 	free(env);
 }
 
-void	noop(void *v)
+static void	noop(void *v)
 {
 	(void)v;
 }
 
 int	b_exit(int argc, char *argv[], t_minishell *ms)
 {
-	(void)argc;
+	if (argc != 1)
+	{
+		ft_printf("usage: exit\n");
+		return 1;
+	}
 	(void)argv;
 	ft_map_clear(&ms->path, &free);
 	ft_map_clear(&ms->env, &free_envvar);
@@ -258,22 +301,26 @@ void	init_minishell(t_minishell *ms)
 	update_path(ms);
 }
 
-static int exec_command(char *path, char *argv[])
+static int exec_command(char *path, char *argv[], t_minishell *ms)
 {
 	pid_t	pid;
 	int 	status;
+	char**	env_array;
 
 	status = 1;
 	pid = fork();
+	env_array = NULL;
 	if (pid == 0)
 	{
 		lseek(STDIN_FILENO, 0, SEEK_END);
-		status = execv(path, argv);
+		env_array = map_to_env_array(&ms->env, FALSE);
+		status = execve(path, argv, env_array);
 		ft_printf("Failed to execute command\n");
 		exit(1);
 	}
 	else
 		waitpid(pid, 0, 0);
+	free(env_array);
 	return status;
 }
 
@@ -370,11 +417,11 @@ static void	parse_command(t_minishell *ms, char* line)
 	ft_striter_u(argv.data[0], &ft_tolower);
 	ft_vector_push(&argv, NULL);
 	if (!access((char*)argv.data[0], X_OK))
-		status = exec_command(argv.data[0], (char**)argv.data);
+		status = exec_command(argv.data[0], (char**)argv.data, ms);
 	else if ((fn_ptr = ft_map_get(&ms->builtins, argv.data[0])))
 		status = fn_ptr(argv.length - 1, (char**)argv.data, ms);
 	else if ((path = ft_map_get(&ms->path, argv.data[0])))
-		status = exec_command(path, (char**)argv.data);
+		status = exec_command(path, (char**)argv.data, ms);
 	else
 		ft_printf("`%s` not found\n", argv.data[0]);
 	ft_vector_del(&argv);

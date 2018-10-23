@@ -12,6 +12,17 @@
 
 #include "libft.h"
 
+uint32_t	ft_map_hash(t_map *m, const char *key)
+{
+	uint32_t hash;
+
+	if (m->key_size)
+		hash = ft_fnv_32((uint8_t*)key, m->key_size);
+	else
+		hash = ft_fnv_32((uint8_t*)key, ft_strlen(key));
+	return hash;
+}
+
 static void	map_place_link(void **new, unsigned bucket_index, t_list *link)
 {
 	t_list		*i;

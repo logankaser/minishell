@@ -28,11 +28,7 @@ void	ft_map_init(t_map *m, unsigned key_size, unsigned size)
 
 void	ft_map_set(t_map *m, const char *key, void *ptr)
 {
-	uint32_t	hash;
-
-	hash = m->key_size ? ft_fnv_32((uint8_t*)key, m->key_size)
-		: ft_fnv_32((uint8_t*)key, ft_strlen(key));
-	ft_map_insert(m, hash, ptr);
+	ft_map_insert(m, ft_map_hash(m, key), ptr);
 	if (m->count / (double)m->capacity >= 0.7)
 		ft_map_resize_(m, m->capacity * 2 + 1);
 }
@@ -44,10 +40,8 @@ void	*ft_map_remove(t_map *m, const char *key)
 	void		*value;
 	t_list		*last;
 
-	hash = m->key_size ? ft_fnv_32((uint8_t*)key, m->key_size)
-		: ft_fnv_32((uint8_t*)key, ft_strlen(key));
-	bucket = m->data[hash % m->capacity];
-	if (bucket && bucket->content_size == hash)
+	hash = ft_map_hash(m, key);
+	if ((bucket = m->data[hash % m->capacity]) && bucket->content_size == hash)
 	{
 		m->data[hash % m->capacity] = bucket->next;
 		value = bucket->content;

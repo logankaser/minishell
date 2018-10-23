@@ -162,6 +162,7 @@ typedef struct		s_map
 	unsigned		key_size;
 }					t_map;
 
+uint32_t			ft_map_hash(t_map *m, const char *key);
 void				ft_map_init(t_map *m, unsigned key_size, unsigned size);
 void				ft_map_resize_(t_map *m, unsigned size);
 void				ft_map_insert(t_map *m, uint32_t hash, void *ptr);
