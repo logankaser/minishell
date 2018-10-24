@@ -17,6 +17,7 @@
 #include <dirent.h>
 #include <libgen.h>
 #include <limits.h>
+#include <signal.h>
 #include "libft.h"
 #include "minishell.h"
 
@@ -100,18 +101,27 @@ int	b_cd(int argc, char *argv[], t_minishell *ms)
 	struct stat	dir;
 	int			status;
 	char		*path;
+	t_envvar	*var;
 
-	(void)ms;
-	path = argv[1];
-	status = 0;
-	if ((status = argc != 2))
-		ft_printf("usage: cd <path>\n");
+	if (argc == 1)
+	{
+		var = ft_map_get(&ms->env, "HOME");
+		path = var ? var->value : "/";
+	}
+	else if (argc == 2 && !ft_strcmp(argv[1], "-"))
+		path = ms->old_pwd;
+	else
+		path = argv[1];
+	if ((status = argc > 2))
+		ft_printf("usage: `cd <path>` or `cd`\n");
 	else if ((status = lstat(path, &dir)))
 		ft_printf("cd: no such file or directory: %s\n", path);
 	else if ((status = !S_ISDIR(dir.st_mode)))
 		ft_printf("cd: not a directory: %s\n", path);
 	else if ((status = chdir(path)))
 		ft_printf("cd: permission denied: %s\n", path);
+	ft_strcpy(ms->old_pwd, ms->pwd);
+	getcwd(ms->pwd, PATH_MAX);
 	return (status);
 }
 
@@ -344,8 +354,8 @@ static void	prompt(t_minishell *ms)
 
 /*
 ** Parameter Expansion
-** Expands the largest possible valid name where a name is a sequence of
-** ([A-Z][a-z][0-9]_) that does not begin with any of (0-9)
+** Expands the largest possible valid name where a name matches
+** the regular expression (^[A-Za-z_]+[A-Za-z0-9_]*$)
 ** ${NAME} is also valid, in which case brackets are matched.
 */
 
@@ -476,7 +486,7 @@ static int	split_argv(t_vector *v, char *src, t_minishell *ms)
 ** Status will be used in 21sh.
 */
 
-static void	parse_command(t_minishell *ms, char *line)
+static void	parse_command(t_minishell *ms, char *command)
 {
 	t_builtin	fn_ptr;
 	char		*path;
@@ -485,7 +495,7 @@ static void	parse_command(t_minishell *ms, char *line)
 
 	status = 127;
 	ft_vector_init(&argv);
-	if (!split_argv(&argv, line, ms))
+	if (!split_argv(&argv, command, ms))
 	{
 		ft_vector_del(&argv);
 		return ;
@@ -503,13 +513,39 @@ static void	parse_command(t_minishell *ms, char *line)
 	ft_vector_del(&argv);
 }
 
+static void parse_input(t_minishell *ms, char *line)
+{
+	char		**commands;
+	unsigned	i;
+
+	commands = ft_strsplit(line, ';');
+	i = 0;
+	while (commands[i])
+	{
+		parse_command(ms, commands[i]);
+		free(commands[i++]);
+	}
+	free(commands);
+}
+
+void	ignore(int arg)
+{
+	(void)arg;
+	ft_putchar('\n');
+}
+
 int	main(void)
 {
-	char		*line;
-	int			ret;
-	t_minishell ms;
+	char				*line;
+	int					ret;
+	t_minishell			ms;
+	struct sigaction	action;
 
-	ms.last_pwd = NULL;
+	action = (struct sigaction){.sa_handler = &ignore, .sa_flags = 0};
+	sigemptyset(&action.sa_mask);
+	sigaction(SIGINT, &action, NULL);
+	getcwd(ms.pwd, PATH_MAX);
+	getcwd(ms.old_pwd, PATH_MAX);
 	init_minishell(&ms);
 	line = NULL;
 	ms.running = TRUE;
@@ -518,7 +554,7 @@ int	main(void)
 		prompt(&ms);
 		ret = get_next_line(STDIN_FILENO, &line);
 		if (ret > 0 && ft_strlen(line) > 0)
-			parse_command(&ms, line);
+			parse_input(&ms, line);
 		ft_memdel((void**)&line);
 	}
 	close(STDIN_FILENO);

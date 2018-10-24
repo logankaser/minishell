@@ -37,7 +37,8 @@ typedef struct	s_minishell
 	t_map		path;
 	t_map		env;
 	t_bool		running;
-	char		*last_pwd;
+	char		pwd[PATH_MAX];
+	char		old_pwd[PATH_MAX];
 }				t_minishell;
 
 typedef int (*t_builtin)(int argc, char *argv[], t_minishell *ms);
