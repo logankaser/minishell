@@ -342,56 +342,92 @@ static void	prompt(t_minishell *ms)
 	ft_printf("\033[33m%s\033[0m.%s) ", user, base);
 }
 
-static unsigned expand_var(const char *raw, t_uvector *out, t_minishell *ms)
+/*
+** Parameter Expansion
+** Expands the largest possible valid name where a name is a sequence of
+** ([A-Z][a-z][0-9]_) that does not begin with any of (0-9)
+** ${NAME} is also valid, in which case brackets are matched.
+*/
+
+size_t expand_var(const char *raw, t_uvector *out, t_minishell *ms)
 {
-	unsigned	i;
-	t_uvector	var;
+	size_t		i;
+	char		*name;
+	t_envvar	*var;
 
-
-	if (!raw[1] || ft_isdigit(raw[1]) || !(ft_isalpha(raw[1]) || raw[1] == '_'))
-	{
-		ft_string_append(out, "$");
-		return (1);
-	}
-	ft_uvector_init(&var, 1);
-	++raw;
+	if (ft_isdigit(raw[0]) || !(ft_isalpha(raw[0]) || ANY2(raw[0], '_', '{')))
+		return 0;
 	i = 0;
-	while (ft_isdigit(raw[i]) || ft_isalpha(raw[i]) || raw[i] == '_')
-		ft_uvector_push(&var, raw + i++);
-	ft_uvector_push(&var, "\0");
-	printf("key: %s\n", var.data);
-	free(var.data);
-	(void)ms;
-	return 1;
+	if (raw[0] == '{')
+	{
+		while (raw[i] && raw[i] != '}')
+			++i;
+		name = ft_strsub(raw, 1, i - 1);
+		var = ft_map_get(&ms->env, name);
+		ft_string_append(out, var ? var->value : "");
+		free(name);
+		return (i + 2);
+	}
+	while (ft_isalpha(raw[i]) || raw[i] == '_')
+		++i;
+	name = ft_strsub(raw, 0, i);
+	var = ft_map_get(&ms->env, name);
+	ft_string_append(out, var ? var->value : "");
+	free(name);
+	return (i + 1);
 }
+
+/*
+** Tilde Expansion
+** Supports only basic `~` -> `$HOME`
+** functionality for now
+** Later will support more complete tilde expansion.
+*/
+
+size_t expand_tilde(const char *raw, t_uvector *out, t_minishell *ms)
+{
+	t_envvar	*var;
+
+	(void)raw;
+	var = ft_map_get(&ms->env, "HOME");
+	ft_string_append(out, var ? var->value : "");
+    return (1);
+}
+
+/*
+** Expansion dispatch
+** i.e `$<varname>` `~<user>`
+**
+** Expansion functions return how many chars
+** of input the expansion consumed
+**
+** For example, expand_var("PLACE/bin", out, ms) returns `5`,
+** because the expansion function consumes five chars, "PLACE".
+*/
 
 static char	*expand(const char *raw, t_minishell *ms)
 {
+	t_uvector	str;
 	unsigned	i;
-	t_uvector	out;
-	t_envvar	*var;
+	unsigned	skip;
+	size_t		len;
 
-	ft_uvector_init(&out, 1);
+	ft_uvector_init(&str, 1);
 	i = 0;
-	while (raw[i])
-		if (raw[i] == '~')
-		{
-			ft_string_appendn(&out, raw, i);
-			var = ft_map_get(&ms->env, "HOME");
-			ft_string_append(&out, var ? var->value : "");
-			raw += i + 1;
-			i = 0;
-		}
-		else if (raw[i] == '$')
-		{
-			ft_string_appendn(&out, raw, i);
-			raw += i + expand_var(raw + i, &out, ms);
-			i = 0;
-		}
-		else
-			++i;
-	ft_string_append(&out, raw);
-	return ((char*)out.data);
+	len = ft_strlen(raw);
+	while (i < len)
+	{
+		skip = 0;
+		if (raw[i] == '$')
+			skip = expand_var(raw + i + 1, &str, ms);
+		else if (raw[i] == '~')
+			skip = expand_tilde(raw + i + 1, &str, ms);
+		i += skip;
+		if (skip == 0)
+			ft_uvector_push(&str, raw + i++);
+	}
+	ft_uvector_push(&str, "\0");
+	return ((char*)str.data);
 }
 
 /*
