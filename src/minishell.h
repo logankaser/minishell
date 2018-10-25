@@ -12,6 +12,7 @@
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
+# include <limits.h>
 # include "libft.h"
 
 /*
@@ -42,5 +43,14 @@ typedef struct	s_minishell
 }				t_minishell;
 
 typedef int (*t_builtin)(int argc, char *argv[], t_minishell *ms);
+
+/*
+** Functions.
+*/
+
+char			**map_to_env_array(t_map *env, t_bool sort);
+char			*expand(const char *raw, t_minishell *ms);
+void			run_commands_semicolon(t_minishell *ms, char *line);
+void			update_path(t_minishell *ms);
 
 #endif

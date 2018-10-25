@@ -245,6 +245,8 @@ typedef	struct		s_fileinfo
 */
 
 void				ft_qsort(void *array[], int size, t_compare pred);
+t_bool				ft_compare_str_asc(const void *a, const void *b);
+t_bool				ft_compare_int_asc(const void *a, const void *b);
 
 /*
 ** Printf.

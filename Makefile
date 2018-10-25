@@ -11,18 +11,28 @@
 # **************************************************************************** #
 
 NAME = minishell
-LIST = main
+LIST = main \
+parse_command \
+update_path \
+expand util \
+b_cd \
+b_echo \
+b_env \
+b_exit \
+b_path \
+b_setenv \
+b_unsetenv
 
-SRC_DIR = src
 OBJ_DIR = obj
+VPATH = src:src/builtin
 
-SRC = $(addsuffix .c, $(addprefix src/, $(LIST)))
+SRC = $(addsuffix .c, $(LIST))
 OBJ = $(addsuffix .o, $(addprefix $(OBJ_DIR)/, $(LIST)))
 DEP = $(OBJ:%.o=%.d)
 CC = clang
 SUB = libft
 
-INCLUDES = -I libft/includes -I libmlx
+INCLUDES = -I libft/includes -I libmlx -I src
 
 CPPFLAGS = -Wall -Wextra -Werror -O3 -g -march=native \
 $(INCLUDES) \
@@ -47,7 +57,7 @@ $(OBJ_DIR):
 
 -include $(DEP)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+$(OBJ_DIR)/%.o: %.c
 	@printf "\e[34;1mCompiling: \e[0m%s\n" $<
 	$(CC) $(CPPFLAGS) -MMD -c $< -o $@
 

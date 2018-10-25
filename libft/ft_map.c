@@ -84,9 +84,7 @@ void	ft_map_clear(t_map *m, void (*free_fn)(void *))
 	unsigned	i;
 	t_list		*bucket;
 	t_list		*tmp;
-	unsigned	count;
 
-	count = 0;
 	i = 0;
 	while (i < m->capacity)
 	{
@@ -97,13 +95,13 @@ void	ft_map_clear(t_map *m, void (*free_fn)(void *))
 		}
 		while (bucket)
 		{
-			free_fn(bucket->content);
+			if (free_fn)
+				free_fn(bucket->content);
 			tmp = bucket;
 			bucket = bucket->next;
 			free(tmp);
 		}
-		m->data[i] = NULL;
-		++i;
+		m->data[++i] = NULL;
 	}
 	m->count = 0;
 }
