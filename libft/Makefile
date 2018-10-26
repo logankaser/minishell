@@ -34,7 +34,7 @@ CC = clang
 
 CPPFLAGS = -Wall -Wextra -Werror \
 -I includes -O3 -g -march=native \
-#-fsanitize=address -fsanitize=undefined
+-fsanitize=address -fsanitize=undefined
 #-flto=thin
 
 all: $(OBJ_DIR) $(NAME)

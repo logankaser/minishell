@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   b_exit.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lkaser <lkaser@student.42.us.org>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2018/10/25 20:00:45 by lkaser            #+#    #+#             */
+/*   Updated: 2018/10/25 20:00:46 by lkaser           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "builtin.h"
 
 static void	free_envvar(void *v)
@@ -9,7 +21,7 @@ static void	free_envvar(void *v)
 	free(env);
 }
 
-int	b_exit(int argc, char *argv[], t_minishell *ms)
+int			b_exit(int argc, char *argv[], t_minishell *ms)
 {
 	if (argc != 1)
 	{

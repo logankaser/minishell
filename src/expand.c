@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   expand.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lkaser <lkaser@student.42.us.org>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2018/10/25 19:59:22 by lkaser            #+#    #+#             */
+/*   Updated: 2018/10/25 19:59:24 by lkaser           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 /*
@@ -7,14 +19,14 @@
 ** ${NAME} is also valid, in which case brackets are matched.
 */
 
-static size_t expand_var(const char *raw, t_uvector *out, t_minishell *ms)
+static size_t	expand_var(const char *raw, t_uvector *out, t_minishell *ms)
 {
 	size_t		i;
 	char		*name;
 	t_envvar	*var;
 
 	if (ft_isdigit(raw[0]) || !(ft_isalpha(raw[0]) || ANY2(raw[0], '_', '{')))
-		return 0;
+		return (0);
 	i = 0;
 	if (raw[0] == '{')
 	{
@@ -42,14 +54,14 @@ static size_t expand_var(const char *raw, t_uvector *out, t_minishell *ms)
 ** Later will support more complete tilde expansion.
 */
 
-static size_t expand_tilde(const char *raw, t_uvector *out, t_minishell *ms)
+static size_t	expand_tilde(const char *raw, t_uvector *out, t_minishell *ms)
 {
 	t_envvar	*var;
 
 	(void)raw;
 	var = ft_map_get(&ms->env, "HOME");
 	ft_string_append(out, var ? var->value : "");
-    return (1);
+	return (1);
 }
 
 /*
@@ -63,7 +75,7 @@ static size_t expand_tilde(const char *raw, t_uvector *out, t_minishell *ms)
 ** because the expansion function consumes five chars, "PLACE".
 */
 
-char	*expand(const char *raw, t_minishell *ms)
+char			*expand(const char *raw, t_minishell *ms)
 {
 	t_uvector	str;
 	unsigned	i;

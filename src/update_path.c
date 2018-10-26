@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   update_path.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lkaser <lkaser@student.42.us.org>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2018/10/25 19:59:48 by lkaser            #+#    #+#             */
+/*   Updated: 2018/10/25 19:59:51 by lkaser           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -30,7 +42,7 @@ static void	scan_dir_for_executables(t_uvector *tmp_str, DIR *dir,
 	}
 }
 
-void	update_path(t_minishell *ms)
+void		update_path(t_minishell *ms)
 {
 	t_envvar		*var_path;
 	char			**path_array;

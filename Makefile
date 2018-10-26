@@ -10,6 +10,8 @@
 #                                                                              #
 # **************************************************************************** #
 
+MAKEFLAGS=-j4
+
 NAME = minishell
 LIST = main \
 parse_command \
@@ -36,10 +38,10 @@ INCLUDES = -I libft/includes -I libmlx -I src
 
 CPPFLAGS = -Wall -Wextra -Werror -O3 -g -march=native \
 $(INCLUDES) \
-#-fsanitize=address -fsanitize=undefined
+-fsanitize=address -fsanitize=undefined
 
 LDFLAGS = -L libft -lft \
-#-fsanitize=address -fsanitize=undefined
+-fsanitize=address -fsanitize=undefined
 
 all: $(OBJ_DIR) $(NAME)
 

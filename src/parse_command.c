@@ -1,8 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parse_command.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lkaser <lkaser@student.42.us.org>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2018/10/25 19:59:38 by lkaser            #+#    #+#             */
+/*   Updated: 2018/10/25 19:59:40 by lkaser           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <unistd.h>
 #include <stdio.h>
 #include "minishell.h"
 
-static int	exec_command(char *path, char *argv[], t_minishell *ms)
+static int		exec_command(char *path, char *argv[], t_minishell *ms)
 {
 	pid_t	pid;
 	int		status;
@@ -39,7 +51,7 @@ static int	exec_command(char *path, char *argv[], t_minishell *ms)
 ** not to expand it.
 */
 
-static int	split_argv(t_vector *v, char *src, t_minishell *ms)
+static int		split_argv(t_vector *v, char *src, t_minishell *ms)
 {
 	long		len;
 	long		i;
@@ -71,7 +83,7 @@ static int	split_argv(t_vector *v, char *src, t_minishell *ms)
 ** Status will be used in 21sh.
 */
 
-static void	parse_command(t_minishell *ms, char *command)
+static void		parse_command(t_minishell *ms, char *command)
 {
 	t_builtin	fn_ptr;
 	char		*path;
@@ -98,7 +110,7 @@ static void	parse_command(t_minishell *ms, char *command)
 	ft_vector_del(&argv);
 }
 
-void run_commands_semicolon(t_minishell *ms, char *line)
+void			run_commands_semicolon(t_minishell *ms, char *line)
 {
 	char		**commands;
 	unsigned	i;

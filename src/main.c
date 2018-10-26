@@ -6,7 +6,7 @@
 /*   By: lkaser <lkaser@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/07/19 14:44:02 by lkaser            #+#    #+#             */
-/*   Updated: 2018/10/22 19:42:22 by lkaser           ###   ########.fr       */
+/*   Updated: 2018/10/25 19:59:32 by lkaser           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,11 @@
 #include "minishell.h"
 #include "builtin/builtin.h"
 
-extern char	**environ;
+#define ENVIRON extern char	**environ
 
-void	init_minishell(t_minishell *ms)
+ENVIRON;
+
+static void		init_minishell(t_minishell *ms)
 {
 	unsigned	i;
 	t_envvar	*var;
@@ -67,13 +69,13 @@ static void	prompt(t_minishell *ms)
 	ft_printf("\033[33m%s\033[0m.%s) ", user, base);
 }
 
-void	ignore(int arg)
+static void	ignore(int arg)
 {
 	(void)arg;
 	ft_putchar('\n');
 }
 
-int	main(void)
+int			main(void)
 {
 	char				*line;
 	int					ret;
