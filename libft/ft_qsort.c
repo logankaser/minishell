@@ -58,12 +58,12 @@ void		ft_qsort(void *array[], int size,
 	sort(array, 0, size - 1, comp);
 }
 
-t_bool	ft_compare_str_asc(const void *a, const void *b)
+t_bool		ft_compare_str_asc(const void *a, const void *b)
 {
 	return (ft_strcmp(a, b) > 0);
 }
 
-t_bool	ft_compare_int_asc(const void *a, const void *b)
+t_bool		ft_compare_int_asc(const void *a, const void *b)
 {
 	return (*((int*)a) > *((int*)b));
 }

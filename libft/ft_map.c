@@ -46,7 +46,7 @@ void	*ft_map_remove(t_map *m, const char *key)
 		m->data[hash % m->capacity] = bucket->next;
 		value = bucket->content;
 		free(bucket);
-		return value;
+		return (value);
 	}
 	last = NULL;
 	while (bucket && bucket->content_size != hash)
@@ -59,7 +59,7 @@ void	*ft_map_remove(t_map *m, const char *key)
 	last->next = bucket->next;
 	value = bucket->content;
 	free(bucket);
-	return value;
+	return (value);
 }
 
 void	*ft_map_get(t_map *m, const char *key)

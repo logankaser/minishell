@@ -212,7 +212,8 @@ void				*ft_uvector_get(t_uvector *v, unsigned i);
 */
 
 size_t				ft_string_append(t_uvector *v, const char *add);
-size_t				ft_string_appendn(t_uvector *v, const char *add, size_t len);
+size_t				ft_string_appendn(
+	t_uvector *v, const char *add, size_t len);
 
 /*
 ** Pair.

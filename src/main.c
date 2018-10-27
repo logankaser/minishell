@@ -12,7 +12,6 @@
 
 #include <unistd.h>
 #include <libgen.h>
-#include <signal.h>
 #include "libft.h"
 #include "minishell.h"
 #include "builtin/builtin.h"
@@ -21,7 +20,9 @@
 
 ENVIRON;
 
-static void		init_minishell(t_minishell *ms)
+volatile		sig_atomic_t g_running = FALSE;
+
+static void		minishell_init_hashmaps(t_minishell *ms)
 {
 	unsigned	i;
 	t_envvar	*var;
@@ -37,8 +38,7 @@ static void		init_minishell(t_minishell *ms)
 		var->value = ft_strchr(var->data, '=');
 		*(var->value) = '\0';
 		ft_map_set(&ms->env, var->data, var);
-		*(var->value) = '=';
-		var->value += 1;
+		*(var->value++) = '=';
 	}
 	ft_map_set(&ms->builtins, "echo", &b_echo);
 	ft_map_set(&ms->builtins, "cd", &b_cd);
@@ -55,7 +55,7 @@ static void		init_minishell(t_minishell *ms)
 ** Like so: `user.your_dir)`.
 */
 
-static void	prompt(t_minishell *ms)
+static void		prompt(t_minishell *ms)
 {
 	t_envvar	*var_user;
 	char		*user;
@@ -69,35 +69,53 @@ static void	prompt(t_minishell *ms)
 	ft_printf("\033[33m%s\033[0m.%s) ", user, base);
 }
 
-static void	ignore(int arg)
+/*
+** Ignore SIGINT / Ctrl + C.
+*/
+
+static void		ignore(int arg)
 {
 	(void)arg;
-	ft_putchar('\n');
+	write(STDOUT_FILENO, "\n", 1);
 }
 
-int			main(void)
+/*
+** Cleanup on SIGTERM.
+*/
+
+static void		term(int arg)
+{
+	(void)arg;
+	write(STDOUT_FILENO, "\n", 1);
+	g_running = FALSE;
+}
+
+/*
+** Mainloop runs as long as g_running is TRUE
+** g_true `is volatile sig_atomic_t` so that it may
+** be safely set from a signal handler.
+*/
+
+int				main(void)
 {
 	char				*line;
-	int					ret;
 	t_minishell			ms;
-	struct sigaction	action;
 
-	action = (struct sigaction){.sa_handler = &ignore, .sa_flags = 0};
-	sigemptyset(&action.sa_mask);
-	sigaction(SIGINT, &action, NULL);
+	set_signal_handler(SIGINT, ignore);
+	set_signal_handler(SIGTERM, term);
+	minishell_init_hashmaps(&ms);
 	getcwd(ms.pwd, PATH_MAX);
 	getcwd(ms.old_pwd, PATH_MAX);
-	init_minishell(&ms);
 	line = NULL;
-	ms.running = TRUE;
-	while (ms.running)
+	g_running = TRUE;
+	while (g_running)
 	{
 		prompt(&ms);
-		ret = get_next_line(STDIN_FILENO, &line);
-		if (ret > 0 && ft_strlen(line) > 0)
-			run_commands_semicolon(&ms, line);
+		if (get_next_line(STDIN_FILENO, &line) > 0)
+			run_commands_semicolons(&ms, line);
 		ft_memdel((void**)&line);
 	}
+	minishell_cleanup(&ms);
 	close(STDIN_FILENO);
 	get_next_line(STDIN_FILENO, &line);
 	return (0);

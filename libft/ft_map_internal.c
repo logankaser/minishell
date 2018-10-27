@@ -20,7 +20,7 @@ uint32_t	ft_map_hash(t_map *m, const char *key)
 		hash = ft_fnv_32((uint8_t*)key, m->key_size);
 	else
 		hash = ft_fnv_32((uint8_t*)key, ft_strlen(key));
-	return hash;
+	return (hash);
 }
 
 static void	map_place_link(void **new, unsigned bucket_index, t_list *link)
@@ -63,7 +63,6 @@ void		ft_map_resize_(t_map *m, unsigned size)
 	m->data = new;
 	m->capacity = size;
 }
-
 
 /*
 ** Reuses the 42 list struct by storing the hash in the

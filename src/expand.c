@@ -16,7 +16,8 @@
 ** Parameter Expansion
 ** Expands the largest possible valid name where a name matches
 ** the regular expression (^[A-Za-z_]+[A-Za-z0-9_]*$)
-** ${NAME} is also valid, in which case brackets are matched.
+** ${NAME} is also valid, in which case brackets are matched and any ASCII
+** characters can be used.
 */
 
 static size_t	expand_var(const char *raw, t_uvector *out, t_minishell *ms)

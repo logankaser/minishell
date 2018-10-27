@@ -110,7 +110,7 @@ static void		parse_command(t_minishell *ms, char *command)
 	ft_vector_del(&argv);
 }
 
-void			run_commands_semicolon(t_minishell *ms, char *line)
+void			run_commands_semicolons(t_minishell *ms, char *line)
 {
 	char		**commands;
 	unsigned	i;

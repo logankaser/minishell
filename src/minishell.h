@@ -31,18 +31,16 @@ typedef struct	s_envvar
 	char*		value;
 }				t_envvar;
 
-
 typedef struct	s_minishell
 {
 	t_map		builtins;
 	t_map		path;
 	t_map		env;
-	t_bool		running;
 	char		pwd[PATH_MAX];
 	char		old_pwd[PATH_MAX];
 }				t_minishell;
 
-typedef int (*t_builtin)(int argc, char *argv[], t_minishell *ms);
+typedef int		(*t_builtin)(int argc, char *argv[], t_minishell *ms);
 
 /*
 ** Functions.
@@ -50,7 +48,9 @@ typedef int (*t_builtin)(int argc, char *argv[], t_minishell *ms);
 
 char			**map_to_env_array(t_map *env, t_bool sort);
 char			*expand(const char *raw, t_minishell *ms);
-void			run_commands_semicolon(t_minishell *ms, char *line);
+void			run_commands_semicolons(t_minishell *ms, char *line);
 void			update_path(t_minishell *ms);
+void			set_signal_handler(int signum, void (*handler)(int));
+void			minishell_cleanup(t_minishell *ms);
 
 #endif

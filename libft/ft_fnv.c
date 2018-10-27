@@ -12,7 +12,10 @@
 
 #include "libft.h"
 
-// FVN-1a 64 bit
+/*
+** FVN-1a 64 bit.
+*/
+
 uint64_t	ft_fnv_64(const uint8_t *data, size_t size)
 {
 	uint64_t	hash;
@@ -25,11 +28,13 @@ uint64_t	ft_fnv_64(const uint8_t *data, size_t size)
 		hash = data[i++] ^ hash;
 		hash *= 1099511628211ULL;
 	}
-	return hash;
+	return (hash);
 }
 
+/*
+** FVN-1a 32 bit.
+*/
 
-// FVN-1a 32 bit
 uint32_t	ft_fnv_32(const uint8_t *data, size_t size)
 {
 	uint32_t	hash;
@@ -42,5 +47,5 @@ uint32_t	ft_fnv_32(const uint8_t *data, size_t size)
 		hash = data[i++] ^ hash;
 		hash *= 16777619;
 	}
-	return hash;
+	return (hash);
 }
