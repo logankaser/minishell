@@ -10,10 +10,9 @@
 #                                                                              #
 # **************************************************************************** #
 
-MAKEFLAGS=-j4
-
 NAME = minishell
 LIST = main \
+line_edit \
 parse_command \
 update_path \
 expand util \
@@ -36,14 +35,15 @@ SUB = libft
 
 INCLUDES = -I libft/includes -I libmlx -I src
 
-CPPFLAGS = -Wall -Wextra -Werror -O3 -g -march=native \
+CPPFLAGS = -Wall -Wextra -Werror -O3 -march=native \
 $(INCLUDES) \
--fsanitize=address -fsanitize=undefined
+#-fsanitize=address -fsanitize=undefined
 
 LDFLAGS = -L libft -lft \
--fsanitize=address -fsanitize=undefined
+-flto=thin
+#-fsanitize=address -fsanitize=undefined
 
-all: $(OBJ_DIR) $(NAME)
+all: $(NAME)
 
 $(NAME): $(OBJ)
 	@for s in $(SUB);\
@@ -59,7 +59,7 @@ $(OBJ_DIR):
 
 -include $(DEP)
 
-$(OBJ_DIR)/%.o: %.c
+$(OBJ_DIR)/%.o: %.c | $(OBJ_DIR)
 	@printf "\e[34;1mCompiling: \e[0m%s\n" $<
 	$(CC) $(CPPFLAGS) -MMD -c $< -o $@
 
@@ -69,15 +69,14 @@ clean:
 		make -sC $$s clean;\
 	done
 	@printf "\e[31;1mCleaning..\e[0m\n"
-	@rm -f $(OBJ) $(DEP)
+	@rm -rf $(OBJ_DIR)
 
-fclean:
+fclean: clean
 	@for s in $(SUB);\
 	do\
 		make -sC $$s fclean;\
 	done
 	@printf "\e[31;1mFull Cleaning..\e[0m\n"
-	@rm -rf $(OBJ_DIR)
 	@rm -f $(NAME)
 	@rm -rf $(NAME).dSYM
 

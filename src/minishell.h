@@ -13,6 +13,7 @@
 #ifndef MINISHELL_H
 # define MINISHELL_H
 # include <limits.h>
+# include <termios.h>
 # include "libft.h"
 
 /*
@@ -31,6 +32,8 @@ typedef struct	s_envvar
 	char*		value;
 }				t_envvar;
 
+typedef struct termios	t_termios;
+
 typedef struct	s_minishell
 {
 	t_map		builtins;
@@ -38,6 +41,7 @@ typedef struct	s_minishell
 	t_map		env;
 	char		pwd[PATH_MAX];
 	char		old_pwd[PATH_MAX];
+	t_termios	terminal_settings;
 }				t_minishell;
 
 typedef int		(*t_builtin)(int argc, char *argv[], t_minishell *ms);
@@ -47,10 +51,13 @@ typedef int		(*t_builtin)(int argc, char *argv[], t_minishell *ms);
 */
 
 char			**map_to_env_array(t_map *env, t_bool sort);
-char			*expand(const char *raw, t_minishell *ms);
-void			run_commands_semicolons(t_minishell *ms, char *line);
 void			update_path(t_minishell *ms);
 void			set_signal_handler(int signum, void (*handler)(int));
+void			set_raw_mode(void);
+void			prompt(t_minishell *ms);
+t_bool			read_line(t_uvector *line, t_minishell *ms);
+void			run_commands(t_minishell *ms, char *line);
+char			*expand(const char *raw, t_minishell *ms);
 void			minishell_cleanup(t_minishell *ms);
 
 #endif

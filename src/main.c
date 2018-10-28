@@ -12,6 +12,7 @@
 
 #include <unistd.h>
 #include <libgen.h>
+#include <termios.h>
 #include "libft.h"
 #include "minishell.h"
 #include "builtin/builtin.h"
@@ -20,7 +21,8 @@
 
 ENVIRON;
 
-volatile		sig_atomic_t g_running = FALSE;
+volatile		sig_atomic_t g_running = TRUE;
+volatile		sig_atomic_t g_clear = FALSE;
 
 static void		minishell_init_hashmaps(t_minishell *ms)
 {
@@ -52,10 +54,10 @@ static void		minishell_init_hashmaps(t_minishell *ms)
 
 /*
 ** Prompt displays user name then the base directory of PWD,
-** Like so: `user.your_dir)`.
+** Like so: `user.current_dir)`.
 */
 
-static void		prompt(t_minishell *ms)
+void			prompt(t_minishell *ms)
 {
 	t_envvar	*var_user;
 	char		*user;
@@ -76,18 +78,18 @@ static void		prompt(t_minishell *ms)
 static void		ignore(int arg)
 {
 	(void)arg;
-	write(STDOUT_FILENO, "\n", 1);
+	g_clear = TRUE;
 }
 
 /*
 ** Cleanup on SIGTERM.
 */
 
-static void		term(int arg)
+static void		quit(int arg)
 {
 	(void)arg;
-	write(STDOUT_FILENO, "\n", 1);
 	g_running = FALSE;
+	write(STDOUT_FILENO, "\n", 1);
 }
 
 /*
@@ -98,25 +100,28 @@ static void		term(int arg)
 
 int				main(void)
 {
-	char				*line;
-	t_minishell			ms;
+	t_uvector	line;
+	t_minishell	ms;
 
+	tcgetattr(STDIN_FILENO, &ms.terminal_settings);
+	set_raw_mode();
 	set_signal_handler(SIGINT, ignore);
-	set_signal_handler(SIGTERM, term);
+	set_signal_handler(SIGTERM, quit);
+	set_signal_handler(SIGQUIT, quit);
 	minishell_init_hashmaps(&ms);
 	getcwd(ms.pwd, PATH_MAX);
 	getcwd(ms.old_pwd, PATH_MAX);
-	line = NULL;
-	g_running = TRUE;
+	ft_uvector_init(&line, 1);
+	prompt(&ms);
 	while (g_running)
 	{
-		prompt(&ms);
-		if (get_next_line(STDIN_FILENO, &line) > 0)
-			run_commands_semicolons(&ms, line);
-		ft_memdel((void**)&line);
+		if (!read_line(&line, &ms))
+			continue ;
+		run_commands(&ms, (char*)line.data);
+		if (g_running)
+			prompt(&ms);
 	}
+	free(line.data);
 	minishell_cleanup(&ms);
-	close(STDIN_FILENO);
-	get_next_line(STDIN_FILENO, &line);
 	return (0);
 }

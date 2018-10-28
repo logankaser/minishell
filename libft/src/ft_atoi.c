@@ -1,18 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_putstr.c                                        :+:      :+:    :+:   */
+/*   ft_atoi.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lkaser <lkaser@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/07/06 20:24:18 by lkaser            #+#    #+#             */
-/*   Updated: 2018/07/06 20:24:19 by lkaser           ###   ########.fr       */
+/*   Created: 2018/07/06 20:21:09 by lkaser            #+#    #+#             */
+/*   Updated: 2018/07/06 20:21:12 by lkaser           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-void	ft_putstr(char const *str)
+uintmax_t	ft_atoi(const char *str)
 {
-	write(1, str, *str ? ft_strlen(str) : 0);
+	char		neg;
+	uintmax_t	out;
+
+	out = 0;
+	while (*str == ' ' || (*str >= '\t' && *str <= '\r'))
+		++str;
+	if ((neg = *str == '-') || *str == '+')
+		++str;
+	while (*str >= '0' && *str <= '9')
+	{
+		out *= 10;
+		out += *str++ - '0';
+	}
+	return (neg ? -out : out);
 }

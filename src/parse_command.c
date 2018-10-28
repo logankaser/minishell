@@ -12,6 +12,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <sys/stat.h>
 #include "minishell.h"
 
 static int		exec_command(char *path, char *argv[], t_minishell *ms)
@@ -28,7 +29,8 @@ static int		exec_command(char *path, char *argv[], t_minishell *ms)
 		lseek(STDIN_FILENO, 0, SEEK_END);
 		env_array = map_to_env_array(&ms->env, FALSE);
 		status = execve(path, argv, env_array);
-		ft_printf("Failed to execute command\n");
+		ft_putstr("Failed to execute command\n");
+		free(argv);
 		exit(1);
 	}
 	else
@@ -79,6 +81,18 @@ static int		split_argv(t_vector *v, char *src, t_minishell *ms)
 	return (v->length);
 }
 
+static t_bool	is_executable(char *path)
+{
+	struct stat	file_info;
+
+	if (access(path, X_OK))
+		return (FALSE);
+	stat(path, &file_info);
+	if (!S_ISREG(file_info.st_mode))
+		return (FALSE);
+	return (TRUE);
+}
+
 /*
 ** Status will be used in 21sh.
 */
@@ -99,7 +113,7 @@ static void		parse_command(t_minishell *ms, char *command)
 	}
 	ft_striter_u(argv.data[0], &ft_tolower);
 	ft_vector_push(&argv, NULL);
-	if (!access((char*)argv.data[0], X_OK))
+	if (is_executable((char*)argv.data[0]))
 		status = exec_command(argv.data[0], (char**)argv.data, ms);
 	else if ((fn_ptr = ft_map_get(&ms->builtins, argv.data[0])))
 		status = fn_ptr(argv.length - 1, (char**)argv.data, ms);
@@ -110,7 +124,7 @@ static void		parse_command(t_minishell *ms, char *command)
 	ft_vector_del(&argv);
 }
 
-void			run_commands_semicolons(t_minishell *ms, char *line)
+void			run_commands(t_minishell *ms, char *line)
 {
 	char		**commands;
 	unsigned	i;

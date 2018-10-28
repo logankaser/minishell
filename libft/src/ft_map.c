@@ -101,7 +101,7 @@ void	ft_map_clear(t_map *m, void (*free_fn)(void *))
 			bucket = bucket->next;
 			free(tmp);
 		}
-		m->data[++i] = NULL;
+		m->data[i++] = NULL;
 	}
 	m->count = 0;
 }

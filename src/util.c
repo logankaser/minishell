@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include <signal.h>
+#include <termios.h>
 #include "minishell.h"
 
 char			**map_to_env_array(t_map *env, t_bool sort)
@@ -65,4 +66,15 @@ void			minishell_cleanup(t_minishell *ms)
 	free(ms->path.data);
 	free(ms->env.data);
 	free(ms->builtins.data);
+	tcsetattr(STDIN_FILENO, TCSANOW, &ms->terminal_settings);
+}
+
+void			set_raw_mode(void)
+{
+	t_termios	term;
+
+	tcgetattr(STDIN_FILENO, &term);
+	term.c_lflag &= ~ECHO;
+	term.c_lflag &= ~ICANON;
+	tcsetattr(STDIN_FILENO, TCSANOW, &term);
 }

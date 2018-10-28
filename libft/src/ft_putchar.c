@@ -1,21 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_isanyof.c                                       :+:      :+:    :+:   */
+/*   ft_putchar.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lkaser <lkaser@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/07/06 20:21:48 by lkaser            #+#    #+#             */
-/*   Updated: 2018/07/20 14:49:06 by lkaser           ###   ########.fr       */
+/*   Created: 2018/07/06 20:23:42 by lkaser            #+#    #+#             */
+/*   Updated: 2018/07/06 20:23:44 by lkaser           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-t_bool	ft_isanyof(char c, const char *these)
+void	ft_putchar(int c)
 {
-	while (*these)
-		if (*these++ == c)
-			return (TRUE);
-	return (FALSE);
+	write(STDOUT_FILENO, &c, 1);
 }

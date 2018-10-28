@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <math.h>
 #include "libft.h"
 
 double	ft_atof(const char *str)
@@ -19,24 +20,24 @@ double	ft_atof(const char *str)
 	unsigned	fac;
 	double		out;
 
-	out = 0;
+	out = 0.0;
 	fac = 1;
 	point = FALSE;
+	if (!ft_strcmp("nan", str))
+		return (NAN);
 	while (*str == ' ' || (*str >= '\t' && *str <= '\r'))
 		++str;
 	if ((neg = *str == '-') || *str == '+')
 		++str;
 	while ((*str >= '0' && *str <= '9') || (*str == '.' && !point))
 	{
-		if (*str == '.')
-		{
-			point = TRUE;
-			++str;
-			continue ;
-		}
 		if (point)
 			fac *= 10;
-		out = out * 10.0f + (double)(*str++ - '0');
+		if (*str == '.')
+			point = TRUE;
+		else
+			out = out * 10.0f + (double)(*str - '0');
+		++str;
 	}
 	return ((neg ? -out : out) / fac);
 }

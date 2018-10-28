@@ -37,7 +37,7 @@ void				ft_uvector_resize(t_uvector *v, unsigned size)
 void				ft_uvector_push(t_uvector *v, const void *d)
 {
 	if (v->length < v->capacity)
-		memcpy(v->data + v->width * v->length++, d, v->width);
+		ft_memcpy(v->data + v->width * v->length++, d, v->width);
 	else
 	{
 		ft_uvector_resize(v, v->capacity * 2);
@@ -54,7 +54,7 @@ void				*ft_uvector_pop(t_uvector *v, void *item)
 		--v->length;
 		return (NULL);
 	}
-	memcpy(item, v->data + v->width * --v->length, v->width);
+	ft_memcpy(item, v->data + v->width * --v->length, v->width);
 	return (item);
 }
 
