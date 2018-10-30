@@ -33,7 +33,7 @@ int	b_cd(int argc, char *argv[], t_minishell *ms)
 		path = argv[1];
 	if ((status = argc > 2))
 		ft_printf("usage: `cd <path>` or `cd`\n");
-	else if ((status = lstat(path, &dir)))
+	else if ((status = stat(path, &dir)))
 		ft_printf("cd: no such file or directory: %s\n", path);
 	else if ((status = !S_ISDIR(dir.st_mode)))
 		ft_printf("cd: not a directory: %s\n", path);

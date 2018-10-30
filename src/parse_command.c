@@ -26,7 +26,7 @@ static int		exec_command(char *path, char *argv[], t_minishell *ms)
 	env_array = NULL;
 	if (pid == 0)
 	{
-		lseek(STDIN_FILENO, 0, SEEK_END);
+		tcsetattr(STDIN_FILENO, TCSANOW, &ms->terminal_settings);
 		env_array = map_to_env_array(&ms->env, FALSE);
 		status = execve(path, argv, env_array);
 		ft_putstr("Failed to execute command\n");
@@ -35,6 +35,7 @@ static int		exec_command(char *path, char *argv[], t_minishell *ms)
 	}
 	else
 		waitpid(pid, 0, 0);
+	set_raw_mode();
 	free(env_array);
 	return (status);
 }

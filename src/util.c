@@ -76,5 +76,7 @@ void			set_raw_mode(void)
 	tcgetattr(STDIN_FILENO, &term);
 	term.c_lflag &= ~ECHO;
 	term.c_lflag &= ~ICANON;
+	term.c_cc[VMIN] = 0;
+	term.c_cc[VTIME] = 1;
 	tcsetattr(STDIN_FILENO, TCSANOW, &term);
 }

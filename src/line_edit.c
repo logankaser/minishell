@@ -10,8 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libgen.h>
 #include "minishell.h"
+
+extern volatile sig_atomic_t g_clear;
 
 static void	autocomplete(t_uvector *line, t_minishell *ms)
 {

@@ -11,8 +11,6 @@
 /* ************************************************************************** */
 
 #include <unistd.h>
-#include <libgen.h>
-#include <termios.h>
 #include "libft.h"
 #include "minishell.h"
 #include "builtin/builtin.h"
@@ -65,7 +63,11 @@ void			prompt(t_minishell *ms)
 	char		*base;
 
 	getcwd(pwd, PATH_MAX);
-	base = basename(pwd);
+	base = ft_strrchr(pwd, '/');
+	if (!base)
+		base = "?";
+	else
+		++base;
 	var_user = ft_map_get(&ms->env, "USER");
 	user = var_user ? var_user->value : ":";
 	ft_printf("\033[33m%s\033[0m.%s) ", user, base);
@@ -79,6 +81,7 @@ static void		ignore(int arg)
 {
 	(void)arg;
 	g_clear = TRUE;
+	write(STDOUT_FILENO, "\n", 1);
 }
 
 /*
@@ -89,7 +92,6 @@ static void		quit(int arg)
 {
 	(void)arg;
 	g_running = FALSE;
-	write(STDOUT_FILENO, "\n", 1);
 }
 
 /*
@@ -115,12 +117,12 @@ int				main(void)
 	prompt(&ms);
 	while (g_running)
 	{
-		if (!read_line(&line, &ms))
+		if (!read_line(&line, &ms) && !g_clear)
 			continue ;
 		run_commands(&ms, (char*)line.data);
-		if (g_running)
-			prompt(&ms);
+		prompt(&ms);
 	}
+	write(STDOUT_FILENO, "\n", 1);
 	free(line.data);
 	minishell_cleanup(&ms);
 	return (0);
