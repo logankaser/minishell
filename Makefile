@@ -38,10 +38,10 @@ INCLUDES = -I libft/includes -I src
 CPPFLAGS = -Wall -Wextra -Werror -O3 -march=native \
 $(INCLUDES) \
 -g 
-#-fsanitize=address -fsanitize=undefined
+-fsanitize=address -fsanitize=undefined
 
 LDFLAGS = -L libft -lft \
-#-fsanitize=address -fsanitize=undefined
+-fsanitize=address -fsanitize=undefined
 #-flto=thin
 
 all: $(NAME)

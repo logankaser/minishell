@@ -67,6 +67,7 @@ void			minishell_cleanup(t_minishell *ms)
 	free(ms->env.data);
 	free(ms->builtins.data);
 	tcsetattr(STDIN_FILENO, TCSANOW, &ms->terminal_settings);
+	write(STDOUT_FILENO, "\n", 1);
 }
 
 void			set_raw_mode(void)

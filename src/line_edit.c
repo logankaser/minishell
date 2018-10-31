@@ -68,3 +68,14 @@ t_bool		read_line(t_uvector *line, t_minishell *ms)
 		autocomplete(line, ms);
 	return (FALSE);
 }
+
+t_bool		handle_clear(t_uvector *line)
+{
+	t_bool	cleared;
+
+	cleared = g_clear;
+	if (g_clear)
+		line->length = 0;
+	g_clear = FALSE;
+	return (cleared);
+}

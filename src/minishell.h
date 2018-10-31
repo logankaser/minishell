@@ -56,6 +56,7 @@ void			set_signal_handler(int signum, void (*handler)(int));
 void			set_raw_mode(void);
 void			prompt(t_minishell *ms);
 t_bool			read_line(t_uvector *line, t_minishell *ms);
+t_bool			handle_clear(t_uvector *line);
 void			run_commands(t_minishell *ms, char *line);
 char			*expand(const char *raw, t_minishell *ms);
 void			minishell_cleanup(t_minishell *ms);

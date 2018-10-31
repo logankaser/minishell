@@ -119,10 +119,10 @@ int				main(void)
 	{
 		if (!read_line(&line, &ms) && !g_clear)
 			continue ;
-		run_commands(&ms, (char*)line.data);
+		if (!handle_clear(&line))
+			run_commands(&ms, (char*)line.data);
 		prompt(&ms);
 	}
-	write(STDOUT_FILENO, "\n", 1);
 	free(line.data);
 	minishell_cleanup(&ms);
 	return (0);
