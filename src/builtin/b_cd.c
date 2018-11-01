@@ -65,6 +65,6 @@ int			b_cd(int argc, char *argv[], t_minishell *ms)
 		return (status);
 	ft_strcpy(ms->old_pwd, ms->pwd);
 	getcwd(ms->pwd, PATH_MAX);
-	update_pwd(argv[1], ms);
+	update_pwd(path, ms);
 	return (0);
 }
