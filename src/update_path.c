@@ -26,11 +26,12 @@ static void	scan_dir_for_executables(t_uvector *tmp_str, DIR *dir,
 
 	tmp_str->length = 0;
 	ft_string_append(tmp_str, dir_path);
+	if (tmp_str->length > 1 && tmp_str->data[tmp_str->length - 2] != '/')
+		ft_string_append(tmp_str, "/");
 	len = tmp_str->length;
 	while ((file = readdir(dir)))
 	{
 		tmp_str->length = len;
-		ft_string_append(tmp_str, "/");
 		ft_string_append(tmp_str, file->d_name);
 		if (file->d_name[0] == '.' || access((char*)tmp_str->data, X_OK))
 			continue ;
