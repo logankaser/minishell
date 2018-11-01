@@ -35,14 +35,13 @@ SUB = libft
 
 INCLUDES = -I libft/includes -I src
 
-CPPFLAGS = -Wall -Wextra -Werror -O3 -march=native \
+CPPFLAGS = -Wall -Wextra -Werror -g -O2 -march=native \
 $(INCLUDES) \
--g 
--fsanitize=address -fsanitize=undefined
+#-fsanitize=address -fsanitize=undefined
 
 LDFLAGS = -L libft -lft \
--fsanitize=address -fsanitize=undefined
-#-flto=thin
+-flto=thin
+#-fsanitize=address -fsanitize=undefined
 
 all: $(NAME)
 

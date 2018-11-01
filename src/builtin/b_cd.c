@@ -15,22 +15,44 @@
 #include <unistd.h>
 #include "builtin.h"
 
-int	b_cd(int argc, char *argv[], t_minishell *ms)
+static char	*get_path(int argc, char *argv[], t_minishell *ms)
 {
-	struct stat	dir;
-	int			status;
-	char		*path;
 	t_envvar	*var;
 
 	if (argc == 1)
 	{
 		var = ft_map_get(&ms->env, "HOME");
-		path = var ? var->value : "/";
+		return (var ? var->value : "/");
 	}
 	else if (argc == 2 && !ft_strcmp(argv[1], "-"))
-		path = ms->old_pwd;
+		return (ms->old_pwd);
 	else
-		path = argv[1];
+		return (argv[1]);
+}
+
+static void	update_pwd(char *path, t_minishell *ms)
+{
+	t_envvar	*var;
+
+	var = ft_map_remove(&ms->env, "PWD");
+	if (!var)
+		var = malloc(sizeof(t_envvar));
+	else
+		free(var->data);
+	var->data = ft_memalloc(4 + ft_strlen(path) + 1);
+	var->value = var->data + 4;
+	ft_strcat(var->data, "PWD=");
+	ft_strcat(var->data, path);
+	ft_map_set(&ms->env, "PWD", var);
+}
+
+int			b_cd(int argc, char *argv[], t_minishell *ms)
+{
+	struct stat	dir;
+	int			status;
+	char		*path;
+
+	path = get_path(argc, argv, ms);
 	if ((status = argc > 2))
 		ft_printf("usage: `cd <path>` or `cd`\n");
 	else if ((status = stat(path, &dir)))
@@ -39,7 +61,10 @@ int	b_cd(int argc, char *argv[], t_minishell *ms)
 		ft_printf("cd: not a directory: %s\n", path);
 	else if ((status = chdir(path)))
 		ft_printf("cd: permission denied: %s\n", path);
+	if (status)
+		return (status);
 	ft_strcpy(ms->old_pwd, ms->pwd);
 	getcwd(ms->pwd, PATH_MAX);
-	return (status);
+	update_pwd(argv[1], ms);
+	return (0);
 }
