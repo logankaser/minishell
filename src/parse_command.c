@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <libgen.h>
 #include "minishell.h"
 
 static int		exec_command(char *path, char *argv[], t_minishell *ms)
@@ -86,6 +87,8 @@ static t_bool	is_executable(char *path)
 {
 	struct stat	file_info;
 
+	if (!ft_strcmp(dirname(path), ".") && ft_strncmp(path, ".", 1))
+		return (FALSE);
 	if (access(path, X_OK))
 		return (FALSE);
 	stat(path, &file_info);

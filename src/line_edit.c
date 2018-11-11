@@ -74,8 +74,7 @@ t_bool		handle_clear(t_uvector *line)
 	t_bool	cleared;
 
 	cleared = g_clear;
-	if (g_clear)
+	if (cleared)
 		line->length = 0;
-	g_clear = FALSE;
 	return (cleared);
 }

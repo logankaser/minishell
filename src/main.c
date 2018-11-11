@@ -62,6 +62,11 @@ void			prompt(t_minishell *ms)
 	char		pwd[PATH_MAX];
 	char		*base;
 
+	if (g_clear)
+	{
+		g_clear = FALSE;
+		write(STDOUT_FILENO, "\n", 1);
+	}
 	getcwd(pwd, PATH_MAX);
 	base = ft_strrchr(pwd, '/');
 	if (!base)
@@ -81,7 +86,6 @@ static void		ignore(int arg)
 {
 	(void)arg;
 	g_clear = TRUE;
-	write(STDOUT_FILENO, "\n", 1);
 }
 
 /*
@@ -121,7 +125,8 @@ int				main(void)
 			continue ;
 		if (!handle_clear(&line))
 			run_commands(&ms, (char*)line.data);
-		prompt(&ms);
+		if (g_running)
+			prompt(&ms);
 	}
 	free(line.data);
 	minishell_cleanup(&ms);

@@ -25,7 +25,10 @@ static char	*get_path(int argc, char *argv[], t_minishell *ms)
 		return (var ? var->value : "/");
 	}
 	else if (argc == 2 && !ft_strcmp(argv[1], "-"))
+	{
+		ft_printf("%s\n", ms->old_pwd);
 		return (ms->old_pwd);
+	}
 	else
 		return (argv[1]);
 }
